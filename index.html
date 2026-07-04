@@ -388,18 +388,20 @@
 (function(){
   const canvas = document.getElementById('scene-canvas');
   const wrap = canvas.parentElement;
+  const loadingEl = document.getElementById('scene-loading');
 
   let renderer, scene, camera;
   let reconGroup, ruinsGroup;
   let dragging=false, prevX=0, prevY=0;
   let rotY=0.6, rotX=-0.35;
   let dist=17;
+  let idleTimer=0, lastFrame=performance.now();
 
   function init(){
     const w = wrap.clientWidth;
     renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-    renderer.setSize(w, canvas.clientHeight, false);
+    renderer.setSize(w, canvas.clientHeight || 460, false);
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(42, w/(canvas.clientHeight||460), 0.1, 200);
@@ -428,6 +430,11 @@
 
     updateCamera();
     animate();
+
+    // Hide the loading overlay now that the scene is built and rendering.
+    if (loadingEl) {
+      loadingEl.classList.add('hidden');
+    }
   }
 
   function stoneMat(color){ return new THREE.MeshStandardMaterial({color, roughness:.9, metalness:.02}); }
@@ -569,12 +576,23 @@
     camera.lookAt(0,0.5,0);
   }
 
-  function animate(){
+  function animate(now){
     requestAnimationFrame(animate);
+    if(!dragging){
+      const dt = (now ? now - lastFrame : 16) || 16;
+      idleTimer += dt;
+      if(idleTimer > 2500){
+        rotY += dt*0.00012;
+        updateCamera();
+      }
+    } else {
+      idleTimer = 0;
+    }
+    lastFrame = now || performance.now();
     renderer.render(scene, camera);
   }
 
-  canvas.addEventListener('pointerdown', e=>{dragging=true;prevX=e.clientX;prevY=e.clientY;});
+  canvas.addEventListener('pointerdown', e=>{dragging=true;prevX=e.clientX;prevY=e.clientY;idleTimer=0;});
   window.addEventListener('pointerup', ()=>dragging=false);
   window.addEventListener('pointermove', e=>{
     if(!dragging) return;
@@ -582,6 +600,7 @@
     rotY -= dx*0.006;
     rotX = Math.max(-0.55, Math.min(0.7, rotX + dy*0.004));
     prevX = e.clientX; prevY = e.clientY;
+    idleTimer = 0;
     updateCamera();
   });
   canvas.addEventListener('wheel', e=>{
@@ -600,9 +619,13 @@
     this.classList.add('active');
     document.getElementById('btn-recon').classList.remove('active');
   });
+  document.getElementById('btn-reset').addEventListener('click', function(){
+    rotY = 0.6; rotX = -0.35; dist = 17;
+    updateCamera();
+  });
 
   window.addEventListener('resize', ()=>{
-    const w = wrap.clientWidth, h = canvas.clientHeight;
+    const w = wrap.clientWidth, h = canvas.clientHeight || 460;
     renderer.setSize(w,h,false);
     camera.aspect = w/h;
     camera.updateProjectionMatrix();
