@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Takshashila — Taxila, Pakistan</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root{
     --stone:#cbb894;
@@ -16,6 +17,7 @@
     --paper:#faf7ee;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
   body{
     background:var(--paper);
     color:var(--ink);
@@ -33,35 +35,29 @@
   h1,h2,h3{font-family:Cambria,'Times New Roman',serif;font-weight:700;}
   a{color:inherit;}
 
-  /* HERO */
+  nav.top{
+    position:sticky;top:0;z-index:50;
+    background:rgba(28,37,54,.96);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;gap:1.6rem;
+    padding:.85rem 1rem;flex-wrap:wrap;
+    font-family:Calibri,Arial,sans-serif;font-size:.82rem;letter-spacing:.03em;
+  }
+  nav.top a{color:var(--cream);text-decoration:none;text-transform:uppercase;opacity:.85;}
+  nav.top a:hover{opacity:1;color:var(--stone);}
+
   header.hero{
     background:linear-gradient(180deg,var(--indigo-deep) 0%, var(--indigo) 70%, var(--stone-dark) 100%);
     color:var(--cream);
-    padding:5rem 1.5rem 6rem;
+    padding:4rem 1.5rem 6rem;
     text-align:center;
     position:relative;
     overflow:hidden;
   }
-  .eagle{
-    width:110px;height:110px;margin:0 auto 1.6rem;opacity:.92;
-  }
+  .eagle{width:110px;height:110px;margin:0 auto 1.6rem;opacity:.92;}
   header.hero .eyebrow{color:var(--stone);}
-  header.hero h1{
-    font-size:clamp(2.6rem,7vw,4.6rem);
-    letter-spacing:.02em;
-    margin:.6rem 0 .3rem;
-  }
-  header.hero .subtitle{
-    font-size:clamp(1rem,2.2vw,1.3rem);
-    font-style:italic;
-    color:var(--stone);
-    max-width:640px;margin:0 auto 2rem;
-  }
-  .meta-row{
-    display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;justify-content:center;
-    font-family:Calibri,Arial,sans-serif;font-size:.85rem;color:var(--cream);
-    opacity:.9;
-  }
+  header.hero h1{font-size:clamp(2.6rem,7vw,4.6rem);letter-spacing:.02em;margin:.6rem 0 .3rem;}
+  header.hero .subtitle{font-size:clamp(1rem,2.2vw,1.3rem);font-style:italic;color:var(--stone);max-width:640px;margin:0 auto 2rem;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;justify-content:center;font-family:Calibri,Arial,sans-serif;font-size:.85rem;color:var(--cream);opacity:.9;}
   .bastion-strip{
     position:absolute;bottom:0;left:0;right:0;height:34px;
     background-repeat:repeat-x;background-size:68px 34px;
@@ -75,19 +71,16 @@
   section.dark{background:var(--indigo-deep);color:var(--cream);max-width:none;}
   section.dark .inner{max-width:920px;margin:0 auto;padding:4rem 1.5rem;}
   section.dark .eyebrow{color:var(--stone);}
+  section.wide{max-width:none;background:var(--paper);}
+  section.wide .inner{max-width:1040px;margin:0 auto;padding:4rem 1.5rem;}
 
   h2{font-size:clamp(1.6rem,3.6vw,2.2rem);margin:.3rem 0 1.6rem;}
-
   .lede{font-size:1.15rem;max-width:70ch;}
 
   .timeline{list-style:none;margin-top:2rem;border-left:2px solid var(--stone-dark);padding-left:1.6rem;}
   .timeline li{position:relative;padding-bottom:1.8rem;}
   .timeline li:last-child{padding-bottom:0;}
-  .timeline li::before{
-    content:'';position:absolute;left:-1.98rem;top:.35rem;
-    width:11px;height:11px;border-radius:50%;background:var(--terracotta);
-    border:2px solid var(--paper);
-  }
+  .timeline li::before{content:'';position:absolute;left:-1.98rem;top:.35rem;width:11px;height:11px;border-radius:50%;background:var(--terracotta);border:2px solid var(--paper);}
   .timeline .yr{font-family:Calibri,Arial,sans-serif;font-weight:700;color:var(--terracotta);font-size:.85rem;letter-spacing:.05em;}
   .timeline p{margin-top:.15rem;}
 
@@ -97,10 +90,7 @@
   .card h3{font-size:1.05rem;margin-bottom:.4rem;color:var(--terracotta);}
   .card p{font-size:.95rem;}
 
-  .alert-box{
-    background:#3a2420;border:1px solid var(--terracotta);color:var(--cream);
-    border-radius:4px;padding:1.6rem 1.8rem;margin-top:1.8rem;
-  }
+  .alert-box{background:#3a2420;border:1px solid var(--terracotta);color:var(--cream);border-radius:4px;padding:1.6rem 1.8rem;margin-top:1.8rem;}
   .alert-box .eyebrow{color:#e8a992;}
   .alert-box p{font-size:.98rem;margin-top:.5rem;}
 
@@ -114,26 +104,62 @@
   .source-list a{color:var(--indigo);text-decoration:underline;font-family:Calibri,Arial,sans-serif;font-size:.85rem;word-break:break-all;}
   section.dark .source-list a{color:var(--stone);}
 
-  .map-frame{
-    margin-top:1.8rem;border:1px solid var(--stone-dark);border-radius:4px;overflow:hidden;
-  }
+  .map-frame{margin-top:1.8rem;border:1px solid var(--stone-dark);border-radius:4px;overflow:hidden;}
   .map-frame iframe{display:block;width:100%;height:340px;border:0;}
 
-  footer{
-    background:var(--ink);color:var(--stone);text-align:center;
-    padding:2.4rem 1.5rem;font-family:Calibri,Arial,sans-serif;font-size:.82rem;
+  .scene-wrap{
+    margin-top:1.8rem;border:1px solid var(--stone-dark);border-radius:6px;overflow:hidden;
+    background:linear-gradient(180deg,#dcd0b2 0%, #efe8d4 55%, #f6f1e2 100%);
+    position:relative;
   }
+  #scene-canvas{display:block;width:100%;height:460px;cursor:grab;touch-action:none;}
+  #scene-canvas:active{cursor:grabbing;}
+  .scene-controls{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+    padding:.9rem 1.1rem;background:var(--indigo-deep);
+  }
+  .toggle-group{display:flex;gap:.5rem;font-family:Calibri,Arial,sans-serif;}
+  .toggle-group button{
+    font-family:Calibri,Arial,sans-serif;font-size:.82rem;letter-spacing:.03em;text-transform:uppercase;
+    padding:.55rem 1.1rem;border-radius:3px;border:1px solid var(--stone);
+    background:transparent;color:var(--stone);cursor:pointer;transition:.15s;
+  }
+  .toggle-group button.active{background:var(--terracotta);border-color:var(--terracotta);color:#fff;}
+  #btn-reset{border-color:rgba(203,184,148,.5);}
+  .scene-hint{font-family:Calibri,Arial,sans-serif;font-size:.78rem;color:var(--stone);opacity:.85;}
+  #scene-loading{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:Calibri,Arial,sans-serif;font-size:.9rem;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--stone-dark);background:linear-gradient(180deg,#dcd0b2 0%, #efe8d4 55%, #f6f1e2 100%);
+    z-index:5;transition:opacity .4s ease;
+  }
+  #scene-loading.hidden{opacity:0;pointer-events:none;}
+  .scene-caption{font-family:Calibri,Arial,sans-serif;font-size:.9rem;color:var(--stone-dark);margin-top:1rem;max-width:70ch;}
+
+  footer{background:var(--ink);color:var(--stone);text-align:center;padding:2.4rem 1.5rem;font-family:Calibri,Arial,sans-serif;font-size:.82rem;}
   footer .eyebrow{color:var(--terracotta);}
   footer p{margin-top:.4rem;}
 
   @media(max-width:600px){
     .stat-row{gap:1.6rem;}
+    #scene-canvas{height:340px;}
+    nav.top{gap:.9rem;font-size:.72rem;}
   }
 </style>
 </head>
 <body>
 
-<header class="hero">
+<nav class="top">
+  <a href="#home">Home</a>
+  <a href="#history">History</a>
+  <a href="#why">Why Now</a>
+  <a href="#reconstruction">3D Reconstruction</a>
+  <a href="#route">Learning Route</a>
+  <a href="#audience">Audience</a>
+  <a href="#explore">Map & Sources</a>
+</nav>
+
+<header class="hero" id="home">
   <svg class="eagle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="47" stroke="#cbb894" stroke-width="1.5"/>
     <path d="M50 20 L58 40 L50 34 L42 40 Z" fill="#cbb894"/>
@@ -155,18 +181,18 @@
   <div class="bastion-strip"></div>
 </header>
 
-<section>
+<section id="history">
   <p class="eyebrow">Why Taxila</p>
   <h2>A university before the word existed</h2>
   <p class="lede">Long before Oxford or Nalanda, Taxila — known in Sanskrit as <em>Takshashila</em>, "the City of
-    Cut Stone" — was drawing scholars, monks and traders from three continents. It sat at the meeting point of
-    the Royal Highway from eastern India, a route from western Asia, and a road from Kashmir and Central Asia,
-    which is exactly why it absorbed so many civilisations: Achaemenid Persian, Greek, Mauryan, Scythian,
-    Parthian, Kushan, and finally Hunnic invasion brought it down in the 5th century CE.</p>
-  <p class="lede" style="margin-top:1rem;">It isn't one ruin — it's a 18-site archaeological region spread
-    across roughly a 10 km radius, layering four separate cities (Saraikala, Bhir Mound, Sirkap, Sirsukh) on top
-    of each other like sediment, plus the Buddhist monastery-and-stupa complexes at Dharmarajika, Jaulian, and
-    Mohra Moradu.</p>
+    Cut Stone" — was drawing scholars, monks and traders from three continents. It sat where the Royal Highway
+    from eastern India met roads from western Asia and from Kashmir/Central Asia, which is exactly why it
+    absorbed so many civilisations: Achaemenid Persian, Greek, Mauryan, Scythian, Parthian, Kushan — until Hunnic
+    invasion brought it down in the 5th century CE.</p>
+  <p class="lede" style="margin-top:1rem;">It isn't one ruin — it's an 18-site archaeological region spanning
+    roughly a 10 km radius, layering four separate cities (Saraikala, Bhir Mound, Sirkap, Sirsukh) one on top of
+    the other like sediment, plus the Buddhist monastery-and-stupa complexes at Dharmarajika, Jaulian, and Mohra
+    Moradu.</p>
 
   <div class="stat-row">
     <div class="stat"><b>18</b><span>Component sites in the World Heritage inscription</span></div>
@@ -178,77 +204,153 @@
 
 <section class="tinted">
   <p class="eyebrow">Timeline</p>
-  <h2>From Bharata's legend to the bulldozer of the 20th century</h2>
+  <h2>From ancient crossroads to the bulldozer of 2026</h2>
   <ul class="timeline">
-    <li><span class="yr">c. 1000 BCE</span><p>First major settlement at Hathial mound; early trade links with
-      the wider Gandhara region.</p></li>
-    <li><span class="yr">6th c. BCE</span><p>Gandhara, with Taxila as a key city, is absorbed into the
-      Achaemenid Persian Empire; Herodotus later calls it one of the empire's wealthiest territories.</p></li>
-    <li><span class="yr">327 BCE</span><p>Alexander the Great reaches Taxila on his campaign into the
-      subcontinent.</p></li>
-    <li><span class="yr">3rd c. BCE</span><p>Mauryan rule; the city becomes a renowned centre of learning,
-      traditionally linked to scholars such as Chanakya (Kautilya).</p></li>
-    <li><span class="yr">2nd c. BCE – 1st c. CE</span><p>Indo-Greek city of Sirkap is laid out on a Hellenistic
-      grid plan — home to the famous Double-Headed Eagle Stupa, fusing Greek, Buddhist and local motifs.</p></li>
-    <li><span class="yr">1st–2nd c. CE</span><p>Kushan Empire; Sirsukh founded by Kanishka. This is the golden
-      age of Gandharan Buddhist art produced at Jaulian, Mohra Moradu and Dharmarajika.</p></li>
-    <li><span class="yr">5th c. CE</span><p>Hun invasions destroy the city; trade routes shift and Taxila fades
-      from history for over a thousand years.</p></li>
-    <li><span class="yr">1863–1873</span><p>Sir Alexander Cunningham rediscovers and identifies the ruins for
-      the Archaeological Survey of India.</p></li>
-    <li><span class="yr">1913–1934</span><p>Sir John Marshall conducts the major systematic excavations that
-      reveal Sirkap, Sirsukh, and the monastery complexes.</p></li>
-    <li><span class="yr">1980</span><p>Taxila is inscribed on the UNESCO World Heritage List.</p></li>
-    <li><span class="yr">March 2026</span><p>A visitor alerts Pakistan's Permanent Delegate to UNESCO in Paris
-      to fresh cement masonry replacing original stonework at two sites.</p></li>
-    <li><span class="yr">July 2026</span><p>UNESCO formally warns Pakistan to reverse the work or risk Taxila
-      being placed on the List of World Heritage in Danger.</p></li>
+    <li><span class="yr">c. 1000 BCE</span><p>First major settlement at Hathial mound; early trade links with the wider Gandhara region.</p></li>
+    <li><span class="yr">6th c. BCE</span><p>Gandhara, with Taxila as a key city, is absorbed into the Achaemenid Persian Empire.</p></li>
+    <li><span class="yr">327 BCE</span><p>Alexander the Great reaches Taxila on his campaign into the subcontinent.</p></li>
+    <li><span class="yr">3rd c. BCE</span><p>Mauryan rule; the city becomes a renowned centre of learning, traditionally linked to scholars such as Chanakya.</p></li>
+    <li><span class="yr">2nd c. BCE – 1st c. CE</span><p>Indo-Greek city of Sirkap laid out on a Hellenistic grid — home to the famous Double-Headed Eagle Stupa.</p></li>
+    <li><span class="yr">1st–2nd c. CE</span><p>Kushan Empire; Sirsukh founded by Kanishka. Golden age of Gandharan Buddhist art at Jaulian, Mohra Moradu and Dharmarajika.</p></li>
+    <li><span class="yr">5th c. CE</span><p>Hun invasions destroy the city; it fades from history for over a thousand years.</p></li>
+    <li><span class="yr">1863–1873</span><p>Sir Alexander Cunningham rediscovers and identifies the ruins for the Archaeological Survey of India.</p></li>
+    <li><span class="yr">1913–1934</span><p>Sir John Marshall's systematic excavations reveal Sirkap, Sirsukh, and the monastery complexes.</p></li>
+    <li><span class="yr">1980</span><p>Taxila inscribed on the UNESCO World Heritage List.</p></li>
+    <li><span class="yr">March 2026</span><p>A visitor alerts Pakistan's Permanent Delegate to UNESCO to fresh cement masonry replacing original stonework at two sites.</p></li>
+    <li><span class="yr">July 2026</span><p>UNESCO formally warns Pakistan to reverse the work or risk Taxila being placed on the List of World Heritage in Danger.</p></li>
   </ul>
 </section>
 
-<section class="dark">
+<section class="dark" id="why">
   <div class="inner">
     <p class="eyebrow">Why it matters right now</p>
     <h2>This isn't a history problem. It's happening this month.</h2>
     <p class="lede">In March 2026, photos submitted to UNESCO showed original, irregular ancient stonework at
       Mohra Moradu (a Kushan-era Buddhist monastery) and Sirkap (the Indo-Greek city layer) replaced with fresh,
-      uniform modern masonry and cement — and, in places, walls rebuilt taller than they were. UNESCO called
-      these "unnecessary interventions" that damage the site's authenticity, and told Pakistani officials it
-      would not hesitate to act, citing its earlier delisting of a World Heritage Site in Germany for the same
-      reason.</p>
+      uniform modern masonry and cement — in places rebuilt taller than the originals. UNESCO called these
+      "unnecessary interventions" that damage authenticity, and referenced its earlier delisting of a World
+      Heritage Site in Germany for the same reason.</p>
     <div class="alert-box">
       <p class="eyebrow">The stakes</p>
-      <p>Punjab's Archaeology Department disputes the framing, saying the work was structural stabilisation, not
-        rebuilding — but the underlying tension is the one this whole project is about: what does it actually
-        mean to "preserve" a place like this, and who gets to decide? A site that survived a thousand years of
-        empires can still lose its status over a decade of well-intentioned concrete.</p>
+      <p>Punjab's Archaeology Department disputes the framing, calling the work structural stabilisation rather
+        than rebuilding — but the underlying tension is what this whole project is about: what does it actually
+        mean to "preserve" a place like this, and who decides? A site that survived a thousand years of empires
+        can still lose its status over a decade of well-intentioned concrete.</p>
     </div>
   </div>
 </section>
 
-<section>
+<section class="wide" id="reconstruction">
+  <div class="inner">
+    <p class="eyebrow">Extra credit · Interactive 3D</p>
+    <h2>The monastery, then and now</h2>
+    <p class="lede">A simplified 3D reconstruction of a Gandharan monastery courtyard like Jaulian or Mohra
+      Moradu — a central stupa, votive stupas, and monk cells around a walled quadrangle. Toggle between how it
+      likely looked at its 2nd-century peak and its ruined condition today.</p>
+
+    <div class="scene-wrap">
+      <div id="scene-loading">Loading scene…</div>
+      <canvas id="scene-canvas"></canvas>
+      <div class="scene-controls">
+        <div class="toggle-group">
+          <button id="btn-recon" class="active">Reconstructed, c. 150 CE</button>
+          <button id="btn-ruins">As Found Today</button>
+          <button id="btn-reset">Reset View</button>
+        </div>
+        <span class="scene-hint">Drag to rotate · Scroll to zoom · Auto-rotates when idle</span>
+      </div>
+    </div>
+    <p class="scene-caption">Illustrative model built for this presentation — not a laser-scan of a specific
+      site. For accurate photography of Jaulian and Sirkap, see the Visual References below.</p>
+  </div>
+</section>
+
+<section class="wide" id="route">
+  <div class="inner">
+    <p class="eyebrow">Beyond Taxila</p>
+    <h2>The Gandhara Learning Route</h2>
+    <p class="lede">Taxila is the anchor, not the whole story. Gandharan civilisation ran along a corridor from
+      Taxila through Peshawar into the Mardan hilltops and up to the Swat Valley, where its sculpture reached its
+      peak. This is the 3-day study circuit we used to place Taxila in context.</p>
+
+    <svg viewBox="0 0 900 260" style="width:100%;height:auto;margin-top:2rem;" xmlns="http://www.w3.org/2000/svg">
+      <line x1="40" y1="60" x2="860" y2="60" stroke="#b5533c" stroke-width="5" stroke-linecap="round"/>
+      <line x1="40" y1="140" x2="860" y2="140" stroke="#2b3a55" stroke-width="5" stroke-linecap="round"/>
+      <line x1="40" y1="220" x2="860" y2="220" stroke="#a9906f" stroke-width="5" stroke-linecap="round"/>
+
+      <!-- Day 1 -->
+      <circle cx="70" cy="60" r="9" fill="#b5533c"/>
+      <circle cx="290" cy="60" r="9" fill="#b5533c"/>
+      <circle cx="510" cy="60" r="9" fill="#b5533c"/>
+      <text x="70" y="40" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Taxila Museum</text>
+      <text x="290" y="40" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Sirkap</text>
+      <text x="510" y="40" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Jaulian</text>
+      <text x="20" y="65" font-family="Calibri,Arial" font-size="12" font-weight="700" fill="#b5533c">D1</text>
+
+      <!-- Day 2 -->
+      <circle cx="150" cy="140" r="9" fill="#2b3a55"/>
+      <circle cx="430" cy="140" r="9" fill="#2b3a55"/>
+      <circle cx="650" cy="140" r="9" fill="#2b3a55"/>
+      <text x="150" y="168" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Peshawar Museum</text>
+      <text x="430" y="168" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Takht-i-Bahi</text>
+      <text x="650" y="168" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Jamal Garhi</text>
+      <text x="20" y="145" font-family="Calibri,Arial" font-size="12" font-weight="700" fill="#2b3a55">D2</text>
+
+      <!-- Day 3 -->
+      <circle cx="480" cy="220" r="9" fill="#a9906f"/>
+      <circle cx="700" cy="220" r="9" fill="#a9906f"/>
+      <text x="480" y="245" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Swat Museum</text>
+      <text x="700" y="245" font-family="Calibri,Arial" font-size="13" fill="#221f1c" text-anchor="middle">Butkara I</text>
+      <text x="20" y="225" font-family="Calibri,Arial" font-size="12" font-weight="700" fill="#a9906f">D3</text>
+    </svg>
+
+    <div class="grid3" style="margin-top:1rem;">
+      <div class="card">
+        <h3>Day 1 — Taxila, the layered city</h3>
+        <p>Taxila Museum → Sirkap (Indo-Greek grid city) → Jaulian monastery, the site currently at the centre
+          of the UNESCO conservation dispute.</p>
+      </div>
+      <div class="card">
+        <h3>Day 2 — North to Mardan</h3>
+        <p>Peshawar Museum's Gandharan sculpture hall → Takht-i-Bahi's hilltop monastic cells → the quieter
+          Jamal Garhi ruins.</p>
+      </div>
+      <div class="card">
+        <h3>Day 3 — Swat, where the art peaked</h3>
+        <p>Swat Museum → Butkara I, an Ashokan-era stupa damaged under militant control and since restored — a
+          second live preservation case study.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:1.6rem;">
+      <a href="https://www.google.com/maps/dir/?api=1&origin=Islamabad,Pakistan&destination=Butkara+I,Mingora,Pakistan&waypoints=Taxila+Museum,Taxila|Sirkap+Palace,Taxila|Jaulian+Buddhist+Stupa+and+Monastery,Taxila|Peshawar+Museum,Peshawar|Takht-i-Bahi+Buddhist+Monastery|Jamal+Garhi+Buddhist+Monastery|Swat+Museum,Mingora&travelmode=driving"
+        target="_blank" style="font-family:Calibri,Arial,sans-serif;font-size:.9rem;color:var(--terracotta);text-decoration:underline;font-weight:700;">
+        Open the full route in Google Maps →
+      </a>
+    </p>
+  </div>
+</section>
+
+<section id="audience">
   <p class="eyebrow">Who this is for</p>
   <h2>Audience & demographic context</h2>
   <div class="grid3">
     <div class="card">
       <h3>Local day-trippers</h3>
-      <p>Families and students from Islamabad/Rawalpindi — Taxila is a ~45-minute drive via the Grand Trunk
-        Road, making it Pakistan's most accessible major heritage site.</p>
+      <p>Families and students from Islamabad/Rawalpindi — Taxila is a ~45-minute drive via the Grand Trunk Road, Pakistan's most accessible major heritage site.</p>
     </div>
     <div class="card">
       <h3>Regional & diaspora Buddhists</h3>
-      <p>Pilgrims from Sri Lanka, Southeast Asia, Korea and Japan, for whom Gandharan Taxila is a foundational
-        site in the spread of Buddhist art and doctrine.</p>
+      <p>Pilgrims from Sri Lanka, Southeast Asia, Korea and Japan, for whom Gandharan Taxila is foundational to the spread of Buddhist art and doctrine.</p>
     </div>
     <div class="card">
       <h3>Heritage & conservation students</h3>
-      <p>The current UNESCO dispute makes Taxila a live case study in conservation ethics — exactly the audience
-        this page and presentation are aimed at.</p>
+      <p>The current UNESCO dispute makes Taxila a live case study in conservation ethics — exactly the audience this page and presentation are aimed at.</p>
     </div>
   </div>
 </section>
 
-<section class="tinted">
+<section class="tinted" id="explore">
   <p class="eyebrow">Explore</p>
   <h2>Map & visual references</h2>
   <div class="map-frame">
@@ -258,36 +360,21 @@
     For copyright reasons this page doesn't rehost site photography — use these to see the real place:
   </p>
   <ul class="source-list" style="list-style:disc;margin-left:1.2rem;">
-    <li>Jaulian stupa & monastery, stucco Buddha reliefs —
-      <a href="https://taxilamuseum.com/" target="_blank">taxilamuseum.com</a></li>
-    <li>Double-Headed Eagle Stupa, Sirkap —
-      <a href="https://en.wikipedia.org/wiki/Taxila" target="_blank">Wikipedia: Taxila</a></li>
-    <li>Aerial/site photography & travel context —
-      <a href="https://discoveringpakistan.com/taxila-where-buddhism-alexander-and-gandhara-converge/" target="_blank">discoveringpakistan.com</a></li>
+    <li>Jaulian stupa & monastery, stucco Buddha reliefs — <a href="https://taxilamuseum.com/" target="_blank">taxilamuseum.com</a></li>
+    <li>Double-Headed Eagle Stupa, Sirkap — <a href="https://en.wikipedia.org/wiki/Taxila" target="_blank">Wikipedia: Taxila</a></li>
+    <li>Aerial/site photography & travel context — <a href="https://discoveringpakistan.com/taxila-where-buddhism-alexander-and-gandhara-converge/" target="_blank">discoveringpakistan.com</a></li>
   </ul>
-</section>
 
-<section>
-  <p class="eyebrow">Sources</p>
-  <h2>Source log</h2>
+  <h2 style="margin-top:2.6rem;">Source log</h2>
   <ul class="source-list">
-    <li><strong>Wikipedia — Taxila.</strong> Overview, chronology, Gandhara kingdom context.
-      <a href="https://en.wikipedia.org/wiki/Taxila" target="_blank">en.wikipedia.org/wiki/Taxila</a></li>
-    <li><strong>UNESCO World Heritage Centre — Taxila listing.</strong> Official inscription record, 1980.
-      <a href="https://whc.unesco.org/en/list/139" target="_blank">whc.unesco.org/en/list/139</a></li>
-    <li><strong>Britannica — Taxila.</strong> Trade-route context, decline, Hun invasion.
-      <a href="https://www.britannica.com/place/Taxila" target="_blank">britannica.com/place/Taxila</a></li>
-    <li><strong>Punjab Tourism, Archaeology & Museums Dept.</strong> Rediscovery by Cunningham, site facts.
-      <a href="https://tourism.punjab.gov.pk/taxila" target="_blank">tourism.punjab.gov.pk/taxila</a></li>
-    <li><strong>World History Encyclopedia — Taxila.</strong> Excavation history, Marshall's work.
-      <a href="https://www.worldhistory.org/taxila/" target="_blank">worldhistory.org/taxila</a></li>
-    <li><strong>National Geographic — "This ancient trading city..."</strong> Greek influence, ASI history.
-      <a href="https://www.nationalgeographic.com/history/article/taxila" target="_blank">nationalgeographic.com/history/article/taxila</a></li>
-    <li><strong>Dawn / Republic World / NewsX — UNESCO warning coverage, July 2026.</strong> Current
-      conservation controversy at Sirkap & Mohra Moradu.
-      <a href="https://www.republicworld.com/world-news/integrity-compromised-unesco-warns-pakistan-to-reverse-reconstructions-at-taxila-world-heritage-sites-or-face-danger-list-2026-07-02-130975" target="_blank">republicworld.com, July 2026</a></li>
-    <li><strong>Taxila Museum.</strong> Gandharan art collection context.
-      <a href="https://taxilamuseum.com/" target="_blank">taxilamuseum.com</a></li>
+    <li><strong>Wikipedia — Taxila.</strong> Overview, chronology, Gandhara kingdom context. <a href="https://en.wikipedia.org/wiki/Taxila" target="_blank">en.wikipedia.org/wiki/Taxila</a></li>
+    <li><strong>UNESCO World Heritage Centre — Taxila listing.</strong> Official inscription record, 1980. <a href="https://whc.unesco.org/en/list/139" target="_blank">whc.unesco.org/en/list/139</a></li>
+    <li><strong>Britannica — Taxila.</strong> Trade-route context, decline, Hun invasion. <a href="https://www.britannica.com/place/Taxila" target="_blank">britannica.com/place/Taxila</a></li>
+    <li><strong>Punjab Tourism, Archaeology & Museums Dept.</strong> Rediscovery by Cunningham, site facts. <a href="https://tourism.punjab.gov.pk/taxila" target="_blank">tourism.punjab.gov.pk/taxila</a></li>
+    <li><strong>World History Encyclopedia — Taxila.</strong> Excavation history, Marshall's work. <a href="https://www.worldhistory.org/taxila/" target="_blank">worldhistory.org/taxila</a></li>
+    <li><strong>National Geographic — Taxila feature.</strong> Greek influence, ASI history. <a href="https://www.nationalgeographic.com/history/article/taxila" target="_blank">nationalgeographic.com/history/article/taxila</a></li>
+    <li><strong>Republic World — UNESCO warning coverage, July 2026.</strong> Current conservation controversy at Sirkap & Mohra Moradu. <a href="https://www.republicworld.com/world-news/integrity-compromised-unesco-warns-pakistan-to-reverse-reconstructions-at-taxila-world-heritage-sites-or-face-danger-list-2026-07-02-130975" target="_blank">republicworld.com, July 2026</a></li>
+    <li><strong>Taxila Museum.</strong> Gandharan art collection context. <a href="https://taxilamuseum.com/" target="_blank">taxilamuseum.com</a></li>
   </ul>
 </section>
 
@@ -296,6 +383,234 @@
   <p>Live location page · Group Sprint Task · Presentation 8:15 PM PKT</p>
   <p>WhatsApp group link, presentation link, cover image & who-did-what log to be added by team lead.</p>
 </footer>
+
+<script>
+(function(){
+  const canvas = document.getElementById('scene-canvas');
+  const wrap = canvas.parentElement;
+
+  let renderer, scene, camera;
+  let reconGroup, ruinsGroup;
+  let dragging=false, prevX=0, prevY=0;
+  let rotY=0.6, rotX=-0.35;
+  let dist=17;
+
+  function init(){
+    const w = wrap.clientWidth;
+    renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.setSize(w, canvas.clientHeight, false);
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(42, w/(canvas.clientHeight||460), 0.1, 200);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambient);
+    const sun = new THREE.DirectionalLight(0xfff2d9, 0.9);
+    sun.position.set(8,12,6);
+    scene.add(sun);
+    const fill = new THREE.DirectionalLight(0x8899bb, 0.35);
+    fill.position.set(-6,4,-8);
+    scene.add(fill);
+
+    const groundGeo = new THREE.PlaneGeometry(40,40);
+    const groundMat = new THREE.MeshStandardMaterial({color:0xd8cba6, roughness:1});
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI/2;
+    ground.position.y = -0.51;
+    scene.add(ground);
+
+    reconGroup = buildReconstructed();
+    ruinsGroup = buildRuins();
+    scene.add(reconGroup);
+    scene.add(ruinsGroup);
+    ruinsGroup.visible = false;
+
+    updateCamera();
+    animate();
+  }
+
+  function stoneMat(color){ return new THREE.MeshStandardMaterial({color, roughness:.9, metalness:.02}); }
+
+  function buildWalls(group, mat, brokenSeg){
+    const size = 9, wallH = 1.1, thick=0.35, segLen=3;
+    const sides = [
+      {x:0,z:-size, rotY:0, len:size*2},
+      {x:0,z:size, rotY:0, len:size*2},
+      {x:-size,z:0, rotY:Math.PI/2, len:size*2},
+      {x:size,z:0, rotY:Math.PI/2, len:size*2},
+    ];
+    sides.forEach((s)=>{
+      const segs = Math.round(s.len/segLen);
+      for(let i=0;i<segs;i++){
+        if(brokenSeg && Math.random() < 0.28) continue;
+        const h = brokenSeg ? wallH * (0.25 + Math.random()*0.6) : wallH;
+        const geo = new THREE.BoxGeometry(segLen*0.94, h, thick);
+        const m = new THREE.Mesh(geo, mat);
+        const offset = -s.len/2 + segLen*(i+0.5);
+        if(s.rotY===0){ m.position.set(s.x+offset, h/2 - 0.5, s.z); }
+        else { m.position.set(s.x, h/2 - 0.5, s.z+offset); }
+        m.rotation.y = s.rotY;
+        group.add(m);
+      }
+    });
+  }
+
+  function buildCells(group, mat, ruined){
+    const positions = [
+      [-6,-6],[-2,-6],[2,-6],[6,-6],
+      [-6,6],[-2,6],[2,6],[6,6],
+      [-6,-2],[-6,2],[6,-2],[6,2]
+    ];
+    positions.forEach(p=>{
+      if(ruined && Math.random()<0.35) return;
+      const h = ruined ? 0.5+Math.random()*0.4 : 1.3;
+      const geo = new THREE.BoxGeometry(1.4,h,1.4);
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(p[0], h/2-0.5, p[1]);
+      m.rotation.y = Math.random()*0.1-0.05;
+      group.add(m);
+    });
+  }
+
+  function buildStupa(group, opts){
+    const ruined = opts.ruined;
+    const domeMat = stoneMat(0xd8c9a0);
+    const drumMat = stoneMat(0xc9b78e);
+    const accentMat = stoneMat(0xb5533c);
+
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.9,1.4,20), drumMat);
+    drum.position.y = 0.2;
+    group.add(drum);
+
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(3.3,3.3,0.5,20), stoneMat(0xb9a679));
+    base.position.y = -0.55;
+    group.add(base);
+
+    if(!ruined){
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(2.4,20,14,0,Math.PI*2,0,Math.PI/2), domeMat);
+      dome.position.y = 0.9;
+      group.add(dome);
+
+      const harmika = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.6,1.1), accentMat);
+      harmika.position.y = 3.4;
+      group.add(harmika);
+
+      for(let i=0;i<4;i++){
+        const r = new THREE.Mesh(new THREE.TorusGeometry(0.55-i*0.09, 0.07, 8, 20), accentMat);
+        r.rotation.x = Math.PI/2;
+        r.position.y = 3.95 + i*0.32;
+        group.add(r);
+      }
+      const finial = new THREE.Mesh(new THREE.ConeGeometry(0.15,0.7,10), accentMat);
+      finial.position.y = 5.25;
+      group.add(finial);
+    } else {
+      const brokenDome = new THREE.Mesh(new THREE.SphereGeometry(2.2,16,10,0,Math.PI*2,0,Math.PI/3), domeMat);
+      brokenDome.position.y = 0.95;
+      brokenDome.rotation.z = 0.15;
+      group.add(brokenDome);
+
+      for(let i=0;i<3;i++){
+        const rubble = new THREE.Mesh(new THREE.BoxGeometry(0.4+Math.random()*0.3,0.3,0.4), stoneMat(0xb9a679));
+        rubble.position.set((Math.random()-0.5)*4, -0.35, (Math.random()-0.5)*4+3);
+        rubble.rotation.y = Math.random()*Math.PI;
+        group.add(rubble);
+      }
+    }
+  }
+
+  function buildVotive(group, x,z, ruined){
+    const mat = stoneMat(0xc9b78e);
+    if(ruined && Math.random()<0.5){
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.38,1.1,10), mat);
+      m.position.set(x,-0.15,z);
+      m.rotation.z = Math.PI/2 * (0.8+Math.random()*0.2);
+      group.add(m);
+      return;
+    }
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.46,0.5,12), mat);
+    base.position.set(x,-0.25,z);
+    group.add(base);
+    if(!ruined){
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.38,12,8,0,Math.PI*2,0,Math.PI/2), mat);
+      dome.position.set(x,0.02,z);
+      group.add(dome);
+      const spire = new THREE.Mesh(new THREE.ConeGeometry(0.08,0.5,8), stoneMat(0xb5533c));
+      spire.position.set(x,0.55,z);
+      group.add(spire);
+    }
+  }
+
+  function buildReconstructed(){
+    const g = new THREE.Group();
+    buildWalls(g, stoneMat(0xb9a679), false);
+    buildCells(g, stoneMat(0xc2ac82), false);
+    buildStupa(g, {ruined:false});
+    [[-3.5,3.2],[3.5,3.2],[-3.5,-1.5],[3.5,-1.5]].forEach(p=>buildVotive(g,p[0],p[1],false));
+    return g;
+  }
+
+  function buildRuins(){
+    const g = new THREE.Group();
+    buildWalls(g, stoneMat(0xa8916a), true);
+    buildCells(g, stoneMat(0xaf9873), true);
+    buildStupa(g, {ruined:true});
+    [[-3.5,3.2],[3.5,3.2],[-3.5,-1.5],[3.5,-1.5]].forEach(p=>buildVotive(g,p[0],p[1],true));
+    return g;
+  }
+
+  function updateCamera(){
+    camera.position.set(
+      dist*Math.sin(rotY)*Math.cos(rotX),
+      dist*Math.sin(rotX)*-1 + 4,
+      dist*Math.cos(rotY)*Math.cos(rotX)
+    );
+    camera.lookAt(0,0.5,0);
+  }
+
+  function animate(){
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+
+  canvas.addEventListener('pointerdown', e=>{dragging=true;prevX=e.clientX;prevY=e.clientY;});
+  window.addEventListener('pointerup', ()=>dragging=false);
+  window.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const dx = e.clientX-prevX, dy = e.clientY-prevY;
+    rotY -= dx*0.006;
+    rotX = Math.max(-0.55, Math.min(0.7, rotX + dy*0.004));
+    prevX = e.clientX; prevY = e.clientY;
+    updateCamera();
+  });
+  canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    dist = Math.max(8, Math.min(30, dist + e.deltaY*0.02));
+    updateCamera();
+  }, {passive:false});
+
+  document.getElementById('btn-recon').addEventListener('click', function(){
+    reconGroup.visible = true; ruinsGroup.visible = false;
+    this.classList.add('active');
+    document.getElementById('btn-ruins').classList.remove('active');
+  });
+  document.getElementById('btn-ruins').addEventListener('click', function(){
+    reconGroup.visible = false; ruinsGroup.visible = true;
+    this.classList.add('active');
+    document.getElementById('btn-recon').classList.remove('active');
+  });
+
+  window.addEventListener('resize', ()=>{
+    const w = wrap.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  });
+
+  init();
+})();
+</script>
 
 </body>
 </html>
