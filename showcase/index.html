@@ -112,6 +112,20 @@ section { padding: 64px 0; border-top: 1px solid var(--border); }
 }
 .honesty-box b { color: var(--sand); }
 
+/* film */
+.film-wrap {
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.film-wrap video { width: 100%; display: block; max-height: 560px; }
+.film-note {
+  margin-top: 18px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--muted);
+}
+.film-note b { color: var(--sand); }
+
 /* narrative */
 .narrative-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
 .narrative-block h3 { font-size: 15px; color: var(--gold); margin-bottom: 10px; }
@@ -140,6 +154,7 @@ footer a { color: var(--gold); text-decoration: none; }
       <a href="#footage">Footage</a>
       <a href="#pipeline">Pipeline</a>
       <a href="#viewer">3D Viewer</a>
+      <a href="#film">Film</a>
       <a href="#team">Team Taxila</a>
     </div>
   </div>
@@ -217,6 +232,23 @@ footer a { color: var(--gold); text-decoration: none; }
     </div>
     <div class="honesty-box">
       <b>What this is, honestly:</b> a monocular heuristic depth estimate, not a trained network like MiDaS and not multi-view triangulation. Real multi-view Structure from Motion (ORB feature matching plus RANSAC) was tested first on a curated multi-angle photo set from another module and found only 12&ndash;17 geometrically consistent matches out of 2,000+ keypoints per photo pair, not enough overlap for real triangulation from photos taken by different photographers rather than a controlled capture. This point cloud is the honest alternative for a single Taxila photo: a monocular depth heuristic, sky and haze masked out by brightness, exported as a real, hand-validated PLY file.
+    </div>
+  </div>
+</section>
+
+<section id="film">
+  <div class="container">
+    <div class="section-tag">Special Session</div>
+    <h2 class="section-title">Taxila, Preserved in 3D: The Short Film</h2>
+    <p class="section-desc">A 75-second story cut assembled from this project's own real artifacts, the Jaulian photo, the feature-detection and AR renders above, and the live point cloud, following a written script instead of a plain slideshow.</p>
+    <div class="film-wrap">
+      <video controls preload="metadata" poster="assets/pipeline/03_capture_to_3d.png">
+        <source src="assets/film/taxila_preserved_in_3d.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div class="film-note">
+      <b>On the voiceover:</b> the team decided against one, having only one of three teammates record a voiceover would look uneven with the others. Instead the film runs on a fully synthesized score built for it: a continuous ambient pad, whoosh transitions between every scene, a reveal chime at the point cloud's first appearance, a tension rumble under the UNESCO warning, and a descending stinger at the honest multi-view reconstruction failure beat, plus Ken Burns motion and crossfades throughout instead of a static, hard-cut slideshow.
     </div>
   </div>
 </section>
