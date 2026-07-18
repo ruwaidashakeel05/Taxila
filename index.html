@@ -118,13 +118,14 @@
     display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
     padding:.9rem 1.1rem;background:var(--indigo-deep);
   }
-  .toggle-group{display:flex;gap:.5rem;font-family:Calibri,Arial,sans-serif;}
+  .toggle-group{display:flex;gap:.5rem;font-family:Calibri,Arial,sans-serif;flex-wrap:wrap;}
   .toggle-group button{
     font-family:Calibri,Arial,sans-serif;font-size:.82rem;letter-spacing:.03em;text-transform:uppercase;
     padding:.55rem 1.1rem;border-radius:3px;border:1px solid var(--stone);
     background:transparent;color:var(--stone);cursor:pointer;transition:.15s;
   }
   .toggle-group button.active{background:var(--terracotta);border-color:var(--terracotta);color:#fff;}
+  .toggle-group button:disabled{opacity:.4;cursor:not-allowed;}
   #btn-reset{border-color:rgba(203,184,148,.5);}
   .scene-hint{font-family:Calibri,Arial,sans-serif;font-size:.78rem;color:var(--stone);opacity:.85;}
   #scene-loading{
@@ -136,6 +137,35 @@
   #scene-loading.hidden{opacity:0;pointer-events:none;}
   .scene-caption{font-family:Calibri,Arial,sans-serif;font-size:.9rem;color:var(--stone-dark);margin-top:1rem;max-width:70ch;}
 
+  .upload-panel{
+    margin-top:1.8rem;border:1px dashed var(--stone-dark);border-radius:6px;
+    padding:1.8rem;background:var(--cream);text-align:center;
+  }
+  .upload-panel input[type=file]{display:none;}
+  .upload-btn{
+    display:inline-block;font-family:Calibri,Arial,sans-serif;font-size:.85rem;letter-spacing:.03em;text-transform:uppercase;
+    padding:.7rem 1.4rem;border-radius:3px;border:1px solid var(--terracotta);
+    background:var(--terracotta);color:#fff;cursor:pointer;transition:.15s;font-weight:700;
+  }
+  .upload-btn:hover{opacity:.9;}
+  .upload-hint{font-family:Calibri,Arial,sans-serif;font-size:.82rem;color:var(--stone-dark);margin-top:.7rem;}
+  .upload-filename{font-family:Calibri,Arial,sans-serif;font-size:.85rem;color:var(--indigo);margin-top:.6rem;font-weight:700;}
+  #upload-scene-canvas{display:block;width:100%;height:420px;cursor:grab;touch-action:none;}
+  #upload-scene-canvas:active{cursor:grabbing;}
+  .upload-scene-wrap{
+    margin-top:1.4rem;border:1px solid var(--stone-dark);border-radius:6px;overflow:hidden;
+    background:linear-gradient(180deg,#20283a 0%, #1c2536 100%);
+    position:relative;display:none;
+  }
+  .upload-scene-wrap.ready{display:block;}
+  .download-ply-btn{
+    font-family:Calibri,Arial,sans-serif;font-size:.82rem;letter-spacing:.03em;text-transform:uppercase;
+    padding:.55rem 1.1rem;border-radius:3px;border:1px solid var(--stone);
+    background:transparent;color:var(--stone);cursor:pointer;font-weight:700;text-decoration:none;display:inline-block;
+  }
+  .download-ply-btn:not(.disabled):hover{background:var(--stone);color:var(--indigo-deep);}
+  .download-ply-btn.disabled{opacity:.35;pointer-events:none;}
+
   footer{background:var(--ink);color:var(--stone);text-align:center;padding:2.4rem 1.5rem;font-family:Calibri,Arial,sans-serif;font-size:.82rem;}
   footer .eyebrow{color:var(--terracotta);}
   footer p{margin-top:.4rem;}
@@ -143,6 +173,7 @@
   @media(max-width:600px){
     .stat-row{gap:1.6rem;}
     #scene-canvas{height:340px;}
+    #upload-scene-canvas{height:300px;}
     nav.top{gap:.9rem;font-size:.72rem;}
   }
 </style>
@@ -154,6 +185,7 @@
   <a href="#history">History</a>
   <a href="#why">Why Now</a>
   <a href="#reconstruction">3D Reconstruction</a>
+  <a href="#try-yours">Try Your Photo</a>
   <a href="#route">Learning Route</a>
   <a href="#audience">Audience</a>
   <a href="#explore">Map & Sources</a>
@@ -262,6 +294,43 @@
     </div>
     <p class="scene-caption">Illustrative model built for this presentation — not a laser-scan of a specific
       site. For accurate photography of Jaulian and Sirkap, see the Visual References below.</p>
+  </div>
+</section>
+
+<section class="wide" id="try-yours">
+  <div class="inner">
+    <p class="eyebrow">Try it yourself · Client-side, nothing uploaded anywhere</p>
+    <h2>Turn your own photo into a point cloud</h2>
+    <p class="lede">This uses the same monocular depth heuristic developed for our team's Jaulian monastery
+      reconstruction: it reads brightness to separate sky/background from foreground, reads edge strength from
+      image gradients, and combines both with vertical position to guess a rough depth for every pixel. It is
+      <strong>not</strong> real photogrammetry or multi-view Structure-from-Motion — our team tested that on the
+      curated site photos first and it wasn't viable, so this is a deliberately single-image heuristic. Treat
+      the result as illustrative, not measured geometry. It works best on photos with a brighter sky/background
+      and a darker, textured foreground subject.</p>
+
+    <div class="upload-panel">
+      <label class="upload-btn" for="photo-input">Choose a photo</label>
+      <input type="file" id="photo-input" accept="image/*">
+      <p class="upload-hint">Processed entirely in your browser. Nothing leaves your device.</p>
+      <p class="upload-filename" id="upload-filename"></p>
+    </div>
+
+    <div class="upload-scene-wrap" id="upload-scene-wrap">
+      <canvas id="upload-scene-canvas"></canvas>
+    </div>
+    <p class="upload-hint" id="upload-scene-empty-note" style="display:none;"></p>
+
+    <div class="scene-controls" id="upload-controls" style="display:none;margin-top:1rem;border-radius:4px;">
+      <div class="toggle-group">
+        <button id="upload-btn-reset">Reset View</button>
+        <a id="upload-download-ply" class="download-ply-btn disabled" download="reconstruction.ply">Download .ply</a>
+      </div>
+      <span class="scene-hint" id="upload-point-count"></span>
+    </div>
+    <p class="scene-caption">The downloaded .ply is a standard ASCII point cloud (x y z + RGB per vertex),
+      openable in MeshLab, CloudCompare, or Blender — the same format used for
+      <code>output/jaulian_monastery_taxila.ply</code> in the source project.</p>
   </div>
 </section>
 
@@ -429,7 +498,6 @@
     updateCamera();
     animate();
 
-    // Hide the loading overlay now that the scene is built and rendering.
     if (loadingEl) {
       loadingEl.classList.add('hidden');
     }
@@ -630,6 +698,280 @@
   });
 
   init();
+})();
+</script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Upload-your-own-photo -> heuristic point cloud -> .ply download.
+
+   Same method as build_ply_reconstruction.py in the source project:
+   monocular heuristic depth (row position + edge strength, with a
+   brightness-based sky/background mask), NOT real multi-view SfM.
+   Ported to run client-side on the pixels of whatever photo the
+   visitor picks. Nothing is uploaded anywhere; it all happens in
+   an in-page <canvas> and a Three.js scene.
+------------------------------------------------------------------------ */
+(function(){
+  const fileInput = document.getElementById('photo-input');
+  const filenameEl = document.getElementById('upload-filename');
+  const sceneWrap = document.getElementById('upload-scene-wrap');
+  const canvas = document.getElementById('upload-scene-canvas');
+  const controlsRow = document.getElementById('upload-controls');
+  const downloadBtn = document.getElementById('upload-download-ply');
+  const pointCountEl = document.getElementById('upload-point-count');
+  const emptyNote = document.getElementById('upload-scene-empty-note');
+  const resetBtn = document.getElementById('upload-btn-reset');
+
+  const MAX_DIM = 260;   // downscale target for the working image, keeps point counts sane
+  const STEP = 2;        // sample every Nth pixel, mirrors the Python script's step=2
+  const SKY_BRIGHTNESS_THRESHOLD = 205; // 0-255, same cut used in build_ply_reconstruction.py
+
+  let renderer, scene, camera, pointsObj;
+  let dragging=false, prevX=0, prevY=0;
+  let rotY=0.5, rotX=-0.25, dist=6;
+  let idleTimer=0, lastFrame=performance.now();
+
+  function resizeRenderer(){
+    // sceneWrap must already be visible (class "ready") when this runs,
+    // otherwise clientWidth reads 0 because of display:none.
+    const w = sceneWrap.clientWidth || 300;
+    const h = canvas.clientHeight || 420;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  function initThree(){
+    renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, 1, 0.01, 500);
+
+    resizeRenderer();
+    animate();
+
+    window.addEventListener('resize', resizeRenderer);
+
+    canvas.addEventListener('pointerdown', e=>{dragging=true;prevX=e.clientX;prevY=e.clientY;idleTimer=0;});
+    window.addEventListener('pointerup', ()=>dragging=false);
+    window.addEventListener('pointermove', e=>{
+      if(!dragging || !pointsObj) return;
+      const dx = e.clientX-prevX, dy = e.clientY-prevY;
+      rotY -= dx*0.006;
+      rotX = Math.max(-1.3, Math.min(1.3, rotX + dy*0.004));
+      prevX = e.clientX; prevY = e.clientY;
+      idleTimer = 0;
+      updateCamera();
+    });
+    canvas.addEventListener('wheel', e=>{
+      if(!pointsObj) return;
+      e.preventDefault();
+      dist = Math.max(1.5, Math.min(30, dist + e.deltaY*0.01));
+      updateCamera();
+    }, {passive:false});
+
+    resetBtn.addEventListener('click', ()=>{
+      if(!pointsObj) return;
+      rotY = 0.5; rotX = -0.25; dist = pointsObj.userData.homeDist || 6;
+      updateCamera();
+    });
+  }
+
+  function updateCamera(){
+    if(!pointsObj) return;
+    const c = pointsObj.userData.center;
+    camera.position.set(
+      c.x + dist*Math.sin(rotY)*Math.cos(rotX),
+      c.y + dist*Math.sin(rotX)*-1,
+      c.z + dist*Math.cos(rotY)*Math.cos(rotX)
+    );
+    camera.lookAt(c.x, c.y, c.z);
+  }
+
+  function animate(now){
+    requestAnimationFrame(animate);
+    if(pointsObj && !dragging){
+      const dt = (now ? now - lastFrame : 16) || 16;
+      idleTimer += dt;
+      if(idleTimer > 2000){
+        rotY += dt*0.00015;
+        updateCamera();
+      }
+    } else {
+      idleTimer = 0;
+    }
+    lastFrame = now || performance.now();
+    if(renderer) renderer.render(scene, camera);
+  }
+
+  function processImage(img){
+    // Downscale onto a working canvas so point counts stay reasonable.
+    const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+    const w = Math.max(2, Math.round(img.width * scale));
+    const h = Math.max(2, Math.round(img.height * scale));
+
+    const work = document.createElement('canvas');
+    work.width = w; work.height = h;
+    const ctx = work.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    const imgData = ctx.getImageData(0, 0, w, h).data; // RGBA
+
+    // Grayscale + brightness (HSV V-channel == max(r,g,b))
+    const gray = new Float32Array(w*h);
+    const brightness = new Float32Array(w*h);
+    for(let i=0;i<w*h;i++){
+      const r = imgData[i*4], g = imgData[i*4+1], b = imgData[i*4+2];
+      gray[i] = 0.299*r + 0.587*g + 0.114*b;
+      brightness[i] = Math.max(r,g,b);
+    }
+
+    // Sobel gradient magnitude (same 3x3 kernel as cv2.Sobel ksize=3)
+    const gradMag = new Float32Array(w*h);
+    let maxGrad = 1e-6;
+    const at = (x,y)=> gray[Math.min(h-1,Math.max(0,y))*w + Math.min(w-1,Math.max(0,x))];
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const gx = (at(x+1,y-1)+2*at(x+1,y)+at(x+1,y+1)) - (at(x-1,y-1)+2*at(x-1,y)+at(x-1,y+1));
+        const gy = (at(x-1,y+1)+2*at(x,y+1)+at(x+1,y+1)) - (at(x-1,y-1)+2*at(x,y-1)+at(x+1,y-1));
+        const mag = Math.sqrt(gx*gx + gy*gy);
+        gradMag[y*w+x] = mag;
+        if(mag > maxGrad) maxGrad = mag;
+      }
+    }
+
+    // Depth heuristic: 5.0 - 2.0*row_norm - 0.6*edge_strength, clipped [2,5],
+    // sky/background masked out by brightness threshold.
+    const xs=[], ys=[], depths=[], colors=[];
+    for(let y=0;y<h;y+=STEP){
+      for(let x=0;x<w;x+=STEP){
+        const idx = y*w+x;
+        if(brightness[idx] > SKY_BRIGHTNESS_THRESHOLD) continue; // sky/haze mask
+        const rowNorm = y/(h-1);
+        const edgeStrength = gradMag[idx]/maxGrad;
+        let depth = 5.0 - 2.0*rowNorm - 0.6*edgeStrength;
+        depth = Math.min(5.0, Math.max(2.0, depth));
+        xs.push(x); ys.push(y); depths.push(depth);
+        colors.push(imgData[idx*4], imgData[idx*4+1], imgData[idx*4+2]);
+      }
+    }
+
+    const focal = w * 1.5; // scale focal length to image width
+    const cx = w/2, cy = h/2;
+    const positions = new Float32Array(xs.length*3);
+    const colorsF = new Float32Array(xs.length*3);
+    let minZ=Infinity, maxZ=-Infinity;
+    let sx=0, sy=0, sz=0;
+    for(let i=0;i<xs.length;i++){
+      const depth = depths[i];
+      const x3 = (xs[i]-cx) * depth / focal;
+      const y3 = -(ys[i]-cy) * depth / focal;
+      const z3 = depth;
+      positions[i*3] = x3;
+      positions[i*3+1] = y3;
+      positions[i*3+2] = z3;
+      colorsF[i*3] = colors[i*3]/255;
+      colorsF[i*3+1] = colors[i*3+1]/255;
+      colorsF[i*3+2] = colors[i*3+2]/255;
+      sx+=x3; sy+=y3; sz+=z3;
+      if(z3<minZ) minZ=z3; if(z3>maxZ) maxZ=z3;
+    }
+    const n = xs.length;
+    const center = n ? {x:sx/n, y:sy/n, z:sz/n} : {x:0,y:0,z:3.5};
+
+    return {positions, colorsF, colorsByte: colors, count:n, center, depthRange:[minZ,maxZ]};
+  }
+
+  function renderPointCloud(result){
+    if(pointsObj){
+      scene.remove(pointsObj);
+      pointsObj.geometry.dispose();
+      pointsObj.material.dispose();
+      pointsObj = null;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(result.positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(result.colorsF, 3));
+    const mat = new THREE.PointsMaterial({size:0.028, vertexColors:true, sizeAttenuation:true});
+    pointsObj = new THREE.Points(geo, mat);
+    pointsObj.userData.center = result.center;
+    pointsObj.userData.homeDist = Math.max(2.5, (result.depthRange[1]-result.depthRange[0]) + 3);
+    scene.add(pointsObj);
+
+    rotY = 0.5; rotX = -0.25; dist = pointsObj.userData.homeDist;
+    updateCamera();
+
+    sceneWrap.classList.add('ready');
+    controlsRow.style.display = 'flex';
+    pointCountEl.textContent = result.count.toLocaleString() + ' points';
+  }
+
+  function buildPlyText(result){
+    const lines = [];
+    lines.push('ply');
+    lines.push('format ascii 1.0');
+    lines.push('comment Generated in-browser from a user-uploaded photo');
+    lines.push('comment Monocular heuristic reconstruction (not multi-view SfM) - illustrative depth estimate');
+    lines.push(`element vertex ${result.count}`);
+    lines.push('property float x');
+    lines.push('property float y');
+    lines.push('property float z');
+    lines.push('property uchar red');
+    lines.push('property uchar green');
+    lines.push('property uchar blue');
+    lines.push('end_header');
+    for(let i=0;i<result.count;i++){
+      const x = result.positions[i*3].toFixed(4);
+      const y = result.positions[i*3+1].toFixed(4);
+      const z = result.positions[i*3+2].toFixed(4);
+      const r = result.colorsByte[i*3], g = result.colorsByte[i*3+1], b = result.colorsByte[i*3+2];
+      lines.push(`${x} ${y} ${z} ${r} ${g} ${b}`);
+    }
+    return lines.join('\n') + '\n';
+  }
+
+  function handleFile(file){
+    if(!file || !file.type.startsWith('image/')) return;
+    filenameEl.textContent = file.name;
+    emptyNote.style.display = 'none';
+
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        sceneWrap.classList.add('ready'); // must happen before any width measurement below
+        if(!renderer){
+          initThree();
+        } else {
+          resizeRenderer();
+        }
+        const result = processImage(img);
+        if(result.count < 50){
+          emptyNote.textContent = 'Almost the whole frame read as sky/background at the current brightness threshold, so there were too few points to build a cloud. Try a photo with more foreground detail.';
+          emptyNote.style.display = 'block';
+          sceneWrap.classList.remove('ready');
+          controlsRow.style.display = 'none';
+          downloadBtn.classList.add('disabled');
+          return;
+        }
+        renderPointCloud(result);
+        const plyText = buildPlyText(result);
+        const blob = new Blob([plyText], {type:'text/plain'});
+        const url = URL.createObjectURL(blob);
+        downloadBtn.href = url;
+        const base = file.name.replace(/\.[^.]+$/, '') || 'reconstruction';
+        downloadBtn.setAttribute('download', base + '_pointcloud.ply');
+        downloadBtn.classList.remove('disabled');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.addEventListener('change', function(){
+    if(this.files && this.files[0]) handleFile(this.files[0]);
+  });
 })();
 </script>
 
