@@ -507,7 +507,15 @@
 
   function init(){
     const w = wrap.clientWidth;
-    renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    try{
+      renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    } catch(err){
+      if(loadingEl){
+        loadingEl.textContent = 'Your browser or device doesn\'t support the 3D viewer (WebGL unavailable). See the Visual References below for site photography instead.';
+        loadingEl.classList.remove('hidden');
+      }
+      return;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
     renderer.setSize(w, canvas.clientHeight || 460, false);
 
@@ -767,6 +775,7 @@
   const MAX_DIM = 260;   // downscale target for the working image, keeps point counts sane
   const STEP = 2;        // sample every Nth pixel, mirrors the Python script's step=2
   const SKY_BRIGHTNESS_THRESHOLD = 205; // 0-255, same cut used in build_ply_reconstruction.py
+  const MAX_FILE_SIZE_MB = 15; // reject oversized photos before they hang decode/canvas work on mobile
 
   let renderer, scene, camera, pointsObj;
   let dragging=false, prevX=0, prevY=0;
@@ -784,7 +793,11 @@
   }
 
   function initThree(){
-    renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    try{
+      renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+    } catch(err){
+      return false;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 
     scene = new THREE.Scene();
@@ -818,6 +831,7 @@
       rotY = 0.5; rotX = -0.25; dist = pointsObj.userData.homeDist || 6;
       updateCamera();
     });
+    return true;
   }
 
   function updateCamera(){
@@ -983,6 +997,16 @@
       downloadBtn.classList.add('disabled');
       return;
     }
+    const sizeMB = file.size / (1024*1024);
+    if(sizeMB > MAX_FILE_SIZE_MB){
+      filenameEl.textContent = '';
+      emptyNote.textContent = 'That photo is ' + sizeMB.toFixed(1) + 'MB, which is over the ' + MAX_FILE_SIZE_MB + 'MB limit and can hang the browser mid-decode on phones. Please choose a smaller photo.';
+      emptyNote.style.display = 'block';
+      sceneWrap.classList.remove('ready');
+      controlsRow.style.display = 'none';
+      downloadBtn.classList.add('disabled');
+      return;
+    }
     filenameEl.textContent = file.name;
     emptyNote.style.display = 'none';
 
@@ -992,7 +1016,15 @@
       img.onload = function(){
         sceneWrap.classList.add('ready'); // must happen before any width measurement below
         if(!renderer){
-          initThree();
+          const ok = initThree();
+          if(ok === false){
+            emptyNote.textContent = 'Your browser or device doesn\'t support the 3D viewer (WebGL unavailable), so the point cloud can\'t be displayed here. Try a different browser or device.';
+            emptyNote.style.display = 'block';
+            sceneWrap.classList.remove('ready');
+            controlsRow.style.display = 'none';
+            downloadBtn.classList.add('disabled');
+            return;
+          }
         } else {
           resizeRenderer();
         }
