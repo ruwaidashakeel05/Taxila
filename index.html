@@ -973,7 +973,16 @@
   }
 
   function handleFile(file){
-    if(!file || !file.type.startsWith('image/')) return;
+    if(!file) return;
+    if(!file.type.startsWith('image/')){
+      filenameEl.textContent = '';
+      emptyNote.textContent = 'That file (' + (file.name || 'selected file') + ') doesn\'t look like an image. Please choose a .jpg, .png, or similar image file.';
+      emptyNote.style.display = 'block';
+      sceneWrap.classList.remove('ready');
+      controlsRow.style.display = 'none';
+      downloadBtn.classList.add('disabled');
+      return;
+    }
     filenameEl.textContent = file.name;
     emptyNote.style.display = 'none';
 
