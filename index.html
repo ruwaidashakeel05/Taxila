@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Takshashila — Taxila, Pakistan</title>
+<meta name="description" content="Taxila, Pakistan's 2,600-year-old crossroads city, is under active UNESCO review after a 2026 conservation dispute. History, the current controversy, and an interactive 3D reconstruction.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Taxila — The City of Cut Stone, Under UNESCO Review">
+<meta property="og:description" content="A 2,600-year-old crossroads of Vedic, Greek, Buddhist and Kushan civilisation — and the UNESCO World Heritage site Pakistan was warned about in July 2026.">
+<meta property="og:site_name" content="Project Takshashila">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Taxila — The City of Cut Stone, Under UNESCO Review">
+<meta name="twitter:description" content="A 2,600-year-old crossroads city, and the site UNESCO warned Pakistan about in July 2026.">
+<meta name="theme-color" content="#1c2536">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
   :root{
@@ -35,15 +44,44 @@
   h1,h2,h3{font-family:Cambria,'Times New Roman',serif;font-weight:700;}
   a{color:inherit;}
 
+  .skip-link{
+    position:absolute;left:-9999px;top:0;z-index:100;
+    background:var(--terracotta);color:#fff;padding:.8rem 1.4rem;
+    font-family:Calibri,Arial,sans-serif;font-size:.9rem;font-weight:700;
+    border-radius:0 0 4px 0;text-decoration:none;
+  }
+  .skip-link:focus{left:0;}
+
+  a:focus-visible, button:focus-visible, input:focus-visible, .upload-btn:focus-within{
+    outline:3px solid var(--terracotta);outline-offset:2px;
+  }
+
   nav.top{
     position:sticky;top:0;z-index:50;
     background:rgba(28,37,54,.96);backdrop-filter:blur(4px);
-    display:flex;align-items:center;justify-content:center;gap:1.6rem;
+    display:flex;align-items:center;justify-content:center;
     padding:.85rem 1rem;flex-wrap:wrap;
     font-family:Calibri,Arial,sans-serif;font-size:.82rem;letter-spacing:.03em;
   }
+  nav.top .nav-links{
+    display:flex;align-items:center;justify-content:center;gap:1.6rem;flex-wrap:wrap;
+  }
   nav.top a{color:var(--cream);text-decoration:none;text-transform:uppercase;opacity:.85;}
-  nav.top a:hover{opacity:1;color:var(--stone);}
+  nav.top a:hover, nav.top a.active-link{opacity:1;color:var(--stone);}
+  .nav-toggle{
+    display:none;background:none;border:1px solid var(--stone);color:var(--cream);
+    font-family:Calibri,Arial,sans-serif;font-size:.8rem;letter-spacing:.03em;text-transform:uppercase;
+    padding:.4rem .9rem;border-radius:3px;cursor:pointer;
+  }
+  @media(max-width:640px){
+    nav.top{justify-content:space-between;}
+    .nav-toggle{display:inline-block;}
+    nav.top .nav-links{
+      display:none;flex-basis:100%;flex-direction:column;gap:.9rem;
+      text-align:center;padding-top:.9rem;
+    }
+    nav.top .nav-links.open{display:flex;}
+  }
 
   header.hero{
     background:linear-gradient(180deg,var(--indigo-deep) 0%, var(--indigo) 70%, var(--stone-dark) 100%);
@@ -107,6 +145,27 @@
   .map-frame{margin-top:1.8rem;border:1px solid var(--stone-dark);border-radius:4px;overflow:hidden;}
   .map-frame iframe{display:block;width:100%;height:340px;border:0;}
 
+  .sitemap-wrap{margin-top:2rem;border:1px solid var(--stone-dark);border-radius:6px;background:var(--cream);padding:1.4rem 1.2rem .6rem;}
+  .sitemap-wrap svg{width:100%;height:auto;display:block;}
+  .sitemap-node a{cursor:pointer;}
+  .sitemap-node circle{fill:var(--terracotta);stroke:var(--paper);stroke-width:2;transition:r .12s;}
+  .sitemap-node a:hover circle, .sitemap-node a:focus circle{r:10;fill:var(--indigo);}
+  .sitemap-node a:focus{outline:none;}
+  .sitemap-node text{font-family:Calibri,Arial,sans-serif;font-size:11px;fill:var(--ink);}
+  .sitemap-path{fill:none;stroke:var(--stone-dark);stroke-width:2;stroke-dasharray:4 4;}
+  .sitemap-caption{font-family:Calibri,Arial,sans-serif;font-size:.8rem;color:var(--stone-dark);margin:.7rem 0 1rem;}
+
+  .view-controls{
+    display:flex;flex-wrap:wrap;gap:1.6rem;align-items:center;
+    padding:.9rem 1.1rem;background:var(--indigo-deep);border-top:1px solid rgba(203,184,148,.2);
+    border-radius:0 0 4px 4px;
+  }
+  .view-control-item{display:flex;align-items:center;gap:.7rem;}
+  .view-control-item label, .view-control-label{
+    font-family:Calibri,Arial,sans-serif;font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;color:var(--stone);
+  }
+  .view-control-item input[type=range]{accent-color:var(--terracotta);cursor:pointer;}
+
   .scene-wrap{
     margin-top:1.8rem;border:1px solid var(--stone-dark);border-radius:6px;overflow:hidden;
     background:linear-gradient(180deg,#dcd0b2 0%, #efe8d4 55%, #f6f1e2 100%);
@@ -136,6 +195,68 @@
   }
   #scene-loading.hidden{opacity:0;pointer-events:none;}
   .scene-caption{font-family:Calibri,Arial,sans-serif;font-size:.9rem;color:var(--stone-dark);margin-top:1rem;max-width:70ch;}
+
+  /* Stupa anatomy diagram */
+  .stupa-anatomy-layout{
+    display:grid;grid-template-columns:minmax(260px,1fr) minmax(260px,1.1fr);
+    gap:2.2rem;margin-top:2rem;align-items:start;
+  }
+  @media(max-width:760px){ .stupa-anatomy-layout{grid-template-columns:1fr;} }
+  .stupa-diagram-wrap{
+    border:1px solid var(--stone-dark);border-radius:6px;background:var(--cream);
+    padding:1rem 1rem .4rem;
+  }
+  .stupa-diagram-wrap svg{width:100%;height:auto;display:block;}
+  .stupa-part{cursor:pointer;}
+  .stupa-part .stupa-part-shape{
+    fill:var(--stone);stroke:var(--stone-dark);stroke-width:1.5;
+    transition:fill .15s, stroke .15s;
+  }
+  .stupa-part:hover .stupa-part-shape, .stupa-part:focus .stupa-part-shape{
+    fill:#dccba1;
+  }
+  .stupa-part.active .stupa-part-shape{
+    fill:var(--terracotta);stroke:var(--indigo-deep);
+  }
+  .stupa-part:focus{outline:none;}
+  .stupa-part:focus-visible .stupa-part-shape{stroke:var(--indigo);stroke-width:2.5;}
+  .stupa-leader{stroke:var(--stone-dark);stroke-width:1;fill:none;}
+  .stupa-label{
+    font-family:Calibri,Arial,sans-serif;font-size:12px;fill:var(--ink);
+    pointer-events:none;
+  }
+  .stupa-label-num{
+    font-family:Calibri,Arial,sans-serif;font-size:11px;font-weight:700;fill:var(--paper);
+    pointer-events:none;
+  }
+  .stupa-badge{fill:var(--indigo);}
+  .stupa-part.active .stupa-badge{fill:var(--terracotta);}
+  .stupa-diagram-hint{
+    font-family:Calibri,Arial,sans-serif;font-size:.78rem;color:var(--stone-dark);
+    margin:.5rem 0 .9rem;
+  }
+  .stupa-glossary{border:1px solid var(--stone);border-radius:6px;overflow:hidden;background:var(--paper);}
+  .stupa-term{
+    display:block;width:100%;text-align:left;border:none;background:transparent;
+    padding:.9rem 1.1rem;cursor:pointer;border-bottom:1px solid var(--stone);
+    font-family:inherit;color:inherit;
+  }
+  .stupa-term:last-child{border-bottom:none;}
+  .stupa-term:hover{background:var(--cream);}
+  .stupa-term.active{background:var(--terracotta);color:#fff;}
+  .stupa-term-title{
+    font-family:Cambria,serif;font-weight:700;font-size:1rem;
+    display:flex;align-items:center;gap:.6rem;
+  }
+  .stupa-term-title .stupa-term-num{
+    font-family:Calibri,Arial,sans-serif;font-size:.7rem;font-weight:700;
+    background:var(--indigo);color:var(--cream);border-radius:50%;
+    width:1.4rem;height:1.4rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .stupa-term.active .stupa-term-title .stupa-term-num{background:var(--indigo-deep);}
+  .stupa-term-desc{font-size:.9rem;margin-top:.3rem;color:var(--ink);opacity:.85;}
+  .stupa-term.active .stupa-term-desc{opacity:1;color:#fff;}
+  .stupa-term:focus-visible{outline:2px solid var(--terracotta);outline-offset:-2px;}
 
   .upload-panel{
     margin-top:1.8rem;border:1px dashed var(--stone-dark);border-radius:6px;
@@ -167,9 +288,36 @@
   .download-ply-btn:not(.disabled):hover{background:var(--stone);color:var(--indigo-deep);}
   .download-ply-btn.disabled{opacity:.35;pointer-events:none;}
 
-  footer{background:var(--ink);color:var(--stone);text-align:center;padding:2.4rem 1.5rem;font-family:Calibri,Arial,sans-serif;font-size:.82rem;}
-  footer .eyebrow{color:var(--terracotta);}
-  footer p{margin-top:.4rem;}
+  footer{background:var(--ink);color:var(--stone);padding:3.2rem 1.5rem 0;font-family:Calibri,Arial,sans-serif;font-size:.85rem;}
+  footer .foot-inner{max-width:1040px;margin:0 auto;}
+  footer .foot-grid{
+    display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2.4rem;
+    padding-bottom:2.4rem;border-bottom:1px solid rgba(203,184,148,.2);
+  }
+  footer h3{
+    font-family:Cambria,serif;font-size:1rem;color:var(--cream);margin-bottom:.9rem;
+  }
+  footer .foot-about p{line-height:1.7;color:var(--stone);opacity:.9;}
+  footer .foot-links{list-style:none;}
+  footer .foot-links li{margin-bottom:.6rem;}
+  footer .foot-links a{color:var(--stone);text-decoration:none;opacity:.85;}
+  footer .foot-links a:hover{opacity:1;color:var(--cream);text-decoration:underline;}
+  footer .foot-status{
+    font-size:.78rem;opacity:.75;margin-top:1rem;padding-top:.9rem;
+    border-top:1px dashed rgba(203,184,148,.25);
+  }
+  footer .foot-bottom{
+    display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;
+    padding:1.4rem 0;font-size:.78rem;opacity:.8;
+  }
+  footer .back-to-top{
+    color:var(--stone);text-decoration:none;border:1px solid rgba(203,184,148,.4);
+    border-radius:3px;padding:.4rem .9rem;text-transform:uppercase;letter-spacing:.05em;font-size:.72rem;
+  }
+  footer .back-to-top:hover{border-color:var(--terracotta);color:var(--cream);}
+  @media(max-width:700px){
+    footer .foot-grid{grid-template-columns:1fr;gap:1.8rem;}
+  }
 
   @media(max-width:600px){
     .stat-row{gap:1.6rem;}
@@ -181,19 +329,25 @@
 </head>
 <body>
 
-<nav class="top">
-  <a href="#home">Home</a>
-  <a href="#history">History</a>
-  <a href="#why">Why Now</a>
-  <a href="#reconstruction">3D Reconstruction</a>
-  <a href="#try-yours">Try Your Photo</a>
-  <a href="#route">Learning Route</a>
-  <a href="#audience">Audience</a>
-  <a href="#explore">Map & Sources</a>
+<a href="#home" class="skip-link">Skip to main content</a>
+
+<nav class="top" id="main-nav">
+  <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu ☰</button>
+  <div class="nav-links" id="nav-links">
+    <a href="#home" data-nav="home">Home</a>
+    <a href="#history" data-nav="history">History</a>
+    <a href="#why" data-nav="why">Why Now</a>
+    <a href="#reconstruction" data-nav="reconstruction">3D Reconstruction</a>
+    <a href="#stupa-anatomy" data-nav="stupa-anatomy">Stupa Anatomy</a>
+    <a href="#try-yours" data-nav="try-yours">Try Your Photo</a>
+    <a href="#route" data-nav="route">Learning Route</a>
+    <a href="#audience" data-nav="audience">Audience</a>
+    <a href="#explore" data-nav="explore">Map & Sources</a>
+  </div>
 </nav>
 
 <header class="hero" id="home">
-  <svg class="eagle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg class="eagle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
     <circle cx="50" cy="50" r="47" stroke="#cbb894" stroke-width="1.5"/>
     <path d="M50 20 L58 40 L50 34 L42 40 Z" fill="#cbb894"/>
     <path d="M20 55 Q35 45 48 52 Q35 60 20 55Z" fill="#cbb894"/>
@@ -233,6 +387,43 @@
     <div class="stat"><b>1980</b><span>Year of UNESCO inscription</span></div>
     <div class="stat"><b>2026</b><span>Year UNESCO warned it could be delisted</span></div>
   </div>
+
+  <div class="sitemap-wrap">
+    <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schematic diagram of Taxila's main archaeological sites, click a marker to jump to where it's discussed on this page">
+      <path class="sitemap-path" d="M60,230 C140,190 180,120 260,110 S 420,90 500,80 S 600,60 640,50"/>
+      <g class="sitemap-node">
+        <a href="#history"><title>Bhir Mound — earliest of the four layered cities, c. 6th century BCE onward.</title>
+          <circle cx="60" cy="230" r="7"/><text x="60" y="252" text-anchor="middle">Bhir Mound</text></a>
+      </g>
+      <g class="sitemap-node">
+        <a href="#why"><title>Sirkap — the Indo-Greek grid city, one of the two sites named in UNESCO's July 2026 letter.</title>
+          <circle cx="260" cy="110" r="7"/><text x="260" y="95" text-anchor="middle">Sirkap</text></a>
+      </g>
+      <g class="sitemap-node">
+        <a href="#history"><title>Dharmarajika — the largest stupa complex in the Taxila valley.</title>
+          <circle cx="330" cy="200" r="7"/><text x="330" y="222" text-anchor="middle">Dharmarajika</text></a>
+      </g>
+      <g class="sitemap-node">
+        <a href="#reconstruction"><title>Jaulian — Kushan-era monastery; this page's 3D reconstruction is modelled on it.</title>
+          <circle cx="500" cy="80" r="7"/><text x="500" y="65" text-anchor="middle">Jaulian</text></a>
+      </g>
+      <g class="sitemap-node">
+        <a href="#why"><title>Mohra Moradu — Buddhist monastery, the other site named in UNESCO's July 2026 letter.</title>
+          <circle cx="440" cy="160" r="7"/><text x="440" y="182" text-anchor="middle">Mohra Moradu</text></a>
+      </g>
+      <g class="sitemap-node">
+        <a href="#route"><title>Taxila Museum — starting point of the suggested Day 1 learning route.</title>
+          <circle cx="150" cy="255" r="7"/><text x="150" y="277" text-anchor="middle">Taxila Museum</text></a>
+      </g>
+      <g class="sitemap-node">
+        <a href="#history"><title>Sirsukh — the later Kushan-era city, founded by Kanishka.</title>
+          <circle cx="640" cy="50" r="7"/><text x="640" y="35" text-anchor="middle">Sirsukh</text></a>
+      </g>
+    </svg>
+    <p class="sitemap-caption">Schematic layout, not to scale or geodetically accurate — for real geography, see the
+      map in <a href="#explore" style="color:var(--terracotta);">Map &amp; Sources</a> below. Click or tap any site
+      to jump to where it's discussed on this page.</p>
+  </div>
 </section>
 
 <section class="tinted">
@@ -258,6 +449,10 @@
   <div class="inner">
     <p class="eyebrow">Why it matters right now</p>
     <h2>This isn't a history problem. It's happening this month.</h2>
+    <p style="font-family:Calibri,Arial,sans-serif;font-size:.82rem;color:var(--stone);opacity:.85;margin-bottom:1rem;">
+      Status as of the last verified UNESCO statement referenced on this page: <strong>2 July 2026</strong>.
+      This is a developing story — check the <a href="#explore" style="text-decoration:underline;">source log</a> for the latest coverage.
+    </p>
     <p class="lede">In March 2026, photos submitted to UNESCO showed original, irregular ancient stonework at
       Mohra Moradu (a Kushan-era Buddhist monastery) and Sirkap (the Indo-Greek city layer) replaced with fresh,
       uniform modern masonry and cement — in places rebuilt taller than the originals. UNESCO called these
@@ -298,6 +493,125 @@
   </div>
 </section>
 
+<section class="wide" id="stupa-anatomy">
+  <div class="inner">
+    <p class="eyebrow">Vocabulary · Click a part</p>
+    <h2>Anatomy of a stupa</h2>
+    <p class="lede">Every stupa in the 3D scene above — and every votive stupa dotted around the monastery
+      courtyard — is built from the same handful of parts. Click or tap a shape in the diagram, or a term in
+      the list, to see how they match up.</p>
+
+    <div class="stupa-anatomy-layout">
+      <div>
+        <div class="stupa-diagram-wrap">
+          <svg viewBox="0 0 460 580" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="Labeled side cross-section of a Gandharan stupa, click a part to see its name and description">
+
+            <!-- Base / plinth -->
+            <g class="stupa-part" data-part="base" tabindex="0" role="button" aria-pressed="false">
+              <title>Base (plinth) — the low platform the whole stupa sits on.</title>
+              <path class="stupa-part-shape" d="M75,540 L305,540 L290,500 L100,500 Z"/>
+              <line class="stupa-leader" x1="297" y1="520" x2="392" y2="520"/>
+              <circle class="stupa-badge" cx="404" cy="520" r="11"/>
+              <text class="stupa-label-num" x="404" y="524" text-anchor="middle">6</text>
+              <text class="stupa-label" x="418" y="524">Base (plinth)</text>
+            </g>
+
+            <!-- Drum / medhi -->
+            <g class="stupa-part" data-part="drum" tabindex="0" role="button" aria-pressed="false">
+              <title>Drum (medhi) — the cylindrical terrace between the base and the dome.</title>
+              <path class="stupa-part-shape" d="M100,500 L290,500 L275,440 L115,440 Z"/>
+              <line class="stupa-leader" x1="283" y1="470" x2="392" y2="470"/>
+              <circle class="stupa-badge" cx="404" cy="470" r="11"/>
+              <text class="stupa-label-num" x="404" y="474" text-anchor="middle">5</text>
+              <text class="stupa-label" x="418" y="474">Drum (medhi)</text>
+            </g>
+
+            <!-- Dome / anda -->
+            <g class="stupa-part" data-part="dome" tabindex="0" role="button" aria-pressed="false">
+              <title>Dome (anda) — the solid hemispherical mound, the stupa's defining silhouette.</title>
+              <path class="stupa-part-shape" d="M115,440 C115,340 140,260 190,260 C240,260 265,340 265,440 Z"/>
+              <line class="stupa-leader" x1="253" y1="360" x2="392" y2="335"/>
+              <circle class="stupa-badge" cx="404" cy="335" r="11"/>
+              <text class="stupa-label-num" x="404" y="339" text-anchor="middle">4</text>
+              <text class="stupa-label" x="418" y="339">Dome (anda)</text>
+            </g>
+
+            <!-- Harmika -->
+            <g class="stupa-part" data-part="harmika" tabindex="0" role="button" aria-pressed="false">
+              <title>Harmika — the small railed platform on top of the dome, representing a sacred enclosure.</title>
+              <rect class="stupa-part-shape" x="165" y="225" width="50" height="35"/>
+              <line class="stupa-leader" x1="215" y1="242" x2="392" y2="248"/>
+              <circle class="stupa-badge" cx="404" cy="248" r="11"/>
+              <text class="stupa-label-num" x="404" y="252" text-anchor="middle">3</text>
+              <text class="stupa-label" x="418" y="252">Harmika</text>
+            </g>
+
+            <!-- Chattras -->
+            <g class="stupa-part" data-part="chattras" tabindex="0" role="button" aria-pressed="false">
+              <title>Chattras — the stacked ceremonial umbrellas that crown the spire, narrowing toward the top.</title>
+              <ellipse class="stupa-part-shape" cx="190" cy="205" rx="45" ry="8"/>
+              <ellipse class="stupa-part-shape" cx="190" cy="175" rx="38" ry="7"/>
+              <ellipse class="stupa-part-shape" cx="190" cy="148" rx="31" ry="6"/>
+              <ellipse class="stupa-part-shape" cx="190" cy="124" rx="24" ry="5"/>
+              <line class="stupa-leader" x1="228" y1="175" x2="392" y2="176"/>
+              <circle class="stupa-badge" cx="404" cy="176" r="11"/>
+              <text class="stupa-label-num" x="404" y="180" text-anchor="middle">2</text>
+              <text class="stupa-label" x="418" y="180">Chattras</text>
+            </g>
+
+            <!-- Finial -->
+            <g class="stupa-part" data-part="finial" tabindex="0" role="button" aria-pressed="false">
+              <title>Finial — the crowning spire tip at the very top of the stupa.</title>
+              <path class="stupa-part-shape" d="M190,60 L198,95 L182,95 Z"/>
+              <rect class="stupa-part-shape" x="187" y="95" width="6" height="29"/>
+              <line class="stupa-leader" x1="198" y1="78" x2="392" y2="90"/>
+              <circle class="stupa-badge" cx="404" cy="90" r="11"/>
+              <text class="stupa-label-num" x="404" y="94" text-anchor="middle">1</text>
+              <text class="stupa-label" x="418" y="94">Finial</text>
+            </g>
+          </svg>
+        </div>
+        <p class="stupa-diagram-hint">Cross-section is schematic and proportioned to match the 3D model above,
+          not a measured drawing of one specific stupa.</p>
+      </div>
+
+      <div class="stupa-glossary" id="stupa-glossary">
+        <div class="stupa-term" data-part="finial" tabindex="0" role="button" aria-pressed="false">
+          <p class="stupa-term-title"><span class="stupa-term-num">1</span> Finial</p>
+          <p class="stupa-term-desc">The crowning tip at the very top of the spire — often the last piece
+            added, and the first to be damaged by weather or looting.</p>
+        </div>
+        <div class="stupa-term" data-part="chattras" tabindex="0" role="button" aria-pressed="false">
+          <p class="stupa-term-title"><span class="stupa-term-num">2</span> Chattras</p>
+          <p class="stupa-term-desc">A stack of ceremonial umbrellas (chattravali), each one narrower than the
+            one below it, symbolizing honor and rank — the more chattras, the more sacred the relic within.</p>
+        </div>
+        <div class="stupa-term" data-part="harmika" tabindex="0" role="button" aria-pressed="false">
+          <p class="stupa-term-title"><span class="stupa-term-num">3</span> Harmika</p>
+          <p class="stupa-term-desc">A small railed enclosure sitting on top of the dome, echoing the fence
+            around a sacred tree or altar — the base the umbrella spire rises from.</p>
+        </div>
+        <div class="stupa-term" data-part="dome" tabindex="0" role="button" aria-pressed="false">
+          <p class="stupa-term-title"><span class="stupa-term-num">4</span> Dome (anda)</p>
+          <p class="stupa-term-desc">The solid hemispherical mound that gives a stupa its recognizable
+            silhouette — "anda" literally means "egg." It usually encases a relic chamber at its core.</p>
+        </div>
+        <div class="stupa-term" data-part="drum" tabindex="0" role="button" aria-pressed="false">
+          <p class="stupa-term-title"><span class="stupa-term-num">5</span> Drum (medhi)</p>
+          <p class="stupa-term-desc">A cylindrical terrace between the base and the dome, sometimes used as a
+            circumambulation path for pilgrims walking clockwise around the monument.</p>
+        </div>
+        <div class="stupa-term" data-part="base" tabindex="0" role="button" aria-pressed="false">
+          <p class="stupa-term-title"><span class="stupa-term-num">6</span> Base (plinth)</p>
+          <p class="stupa-term-desc">The low platform the whole structure rests on, usually the first part
+            to survive excavation and the last to be reliably dated.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="wide" id="try-yours">
   <div class="inner">
     <p class="eyebrow">Try it yourself · Client-side, nothing uploaded anywhere</p>
@@ -328,6 +642,19 @@
         <a id="upload-download-ply" class="download-ply-btn disabled" download="reconstruction.ply" aria-disabled="true">Download .ply</a>
       </div>
       <span class="scene-hint" id="upload-point-count" aria-live="polite"></span>
+    </div>
+    <div class="view-controls" id="upload-view-controls" style="display:none;">
+      <div class="view-control-item">
+        <label for="upload-point-size">Point size</label>
+        <input type="range" id="upload-point-size" min="0.01" max="0.08" step="0.005" value="0.028">
+      </div>
+      <div class="view-control-item">
+        <span class="view-control-label">Color</span>
+        <div class="toggle-group">
+          <button id="upload-color-rgb" class="active" aria-pressed="true">Photo colors</button>
+          <button id="upload-color-depth" aria-pressed="false">Depth-shaded</button>
+        </div>
+      </div>
     </div>
     <p class="scene-caption">The downloaded .ply is a standard ASCII point cloud (x y z + RGB per vertex),
       openable in MeshLab, CloudCompare, or Blender — the same format used for
@@ -424,7 +751,12 @@
   <p class="eyebrow">Explore</p>
   <h2>Map & visual references</h2>
   <div class="map-frame">
-    <iframe loading="lazy" src="https://www.google.com/maps?q=Taxila+Museum,+Taxila,+Pakistan&output=embed"></iframe>
+    <iframe id="taxila-map-iframe" loading="lazy" title="Map of Taxila Museum, Taxila, Pakistan"
+      src="https://www.google.com/maps?q=Taxila+Museum,+Taxila,+Pakistan&output=embed"
+      onerror="document.getElementById('taxila-map-iframe').style.display='none';document.getElementById('taxila-map-fallback').style.display='block';"></iframe>
+    <p id="taxila-map-fallback" style="display:none;padding:1rem;font-family:Calibri,Arial,sans-serif;font-size:.85rem;">
+      Map failed to load. <a href="https://www.google.com/maps?q=Taxila+Museum,+Taxila,+Pakistan" target="_blank" style="color:var(--terracotta);text-decoration:underline;">Open Taxila Museum in Google Maps instead →</a>
+    </p>
   </div>
   <p style="margin-top:1.2rem;font-family:Calibri,Arial,sans-serif;font-size:.9rem;max-width:70ch;">
     This page doesn't rehost site photography — that's a deliberate curation choice, not a gap. Original
@@ -490,7 +822,42 @@
 </section>
 
 <footer>
-  <p class="eyebrow">Project Takshashila</p>
+  <div class="foot-inner">
+    <div class="foot-grid">
+      <div class="foot-about">
+        <h3>Project Takshashila</h3>
+        <p>An independent heritage-awareness project on Taxila, Pakistan, built as a student presentation.
+          It is not an official publication of UNESCO, the Government of Punjab, or the Directorate General
+          of Archaeology &amp; Museums — for authoritative statements, see the primary sources linked below.</p>
+        <p class="foot-status">Last verified UNESCO statement referenced on this page: <strong>2 July 2026</strong>.</p>
+      </div>
+      <div>
+        <h3>Explore</h3>
+        <ul class="foot-links" aria-label="Site sections">
+          <li><a href="#history">History</a></li>
+          <li><a href="#why">Why Now</a></li>
+          <li><a href="#reconstruction">3D Reconstruction</a></li>
+          <li><a href="#stupa-anatomy">Stupa Anatomy</a></li>
+          <li><a href="#try-yours">Try Your Photo</a></li>
+          <li><a href="#route">Learning Route</a></li>
+          <li><a href="#explore">Map &amp; Sources</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Primary sources</h3>
+        <ul class="foot-links">
+          <li><a href="https://whc.unesco.org/en/list/139" target="_blank">UNESCO World Heritage listing</a></li>
+          <li><a href="https://www.republicworld.com/world-news/integrity-compromised-unesco-warns-pakistan-to-reverse-reconstructions-at-taxila-world-heritage-sites-or-face-danger-list-2026-07-02-130975" target="_blank">UNESCO warning coverage, Jul 2026</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Taxila" target="_blank">Wikipedia: Taxila</a></li>
+          <li><a href="https://tourism.punjab.gov.pk/taxila" target="_blank">Punjab Tourism &amp; Archaeology Dept.</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span id="foot-year-line">© Project Takshashila</span>
+      <a href="#home" class="back-to-top">Back to top ↑</a>
+    </div>
+  </div>
 </footer>
 
 <script>
@@ -766,13 +1133,29 @@
   });
 
   window.addEventListener('resize', ()=>{
+    if(!renderer) return;
     const w = wrap.clientWidth, h = canvas.clientHeight || 460;
     renderer.setSize(w,h,false);
     camera.aspect = w/h;
     camera.updateProjectionMatrix();
   });
 
-  init();
+  // Lazy-init: this scene is off-screen on page load for most visitors,
+  // so defer the Three.js setup until it actually scrolls into view
+  // instead of paying that cost during initial page load.
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          init();
+          io.disconnect();
+        }
+      });
+    }, {rootMargin:'200px'});
+    io.observe(wrap);
+  } else {
+    init(); // fallback for browsers without IntersectionObserver
+  }
 })();
 </script>
 
@@ -798,6 +1181,10 @@
   const pointCountEl = document.getElementById('upload-point-count');
   const emptyNote = document.getElementById('upload-scene-empty-note');
   const resetBtn = document.getElementById('upload-btn-reset');
+  const viewControls = document.getElementById('upload-view-controls');
+  const pointSizeSlider = document.getElementById('upload-point-size');
+  const colorRgbBtn = document.getElementById('upload-color-rgb');
+  const colorDepthBtn = document.getElementById('upload-color-depth');
 
   const MAX_DIM = 260;   // downscale target for the working image, keeps point counts sane
   const STEP = 2;        // sample every Nth pixel, mirrors the Python script's step=2
@@ -981,7 +1368,23 @@
     const n = xs.length;
     const center = n ? {x:sx/n, y:sy/n, z:sz/n} : {x:0,y:0,z:3.5};
 
-    return {positions, colorsF, colorsByte: colors, count:n, center, depthRange:[minZ,maxZ]};
+    // Second color scheme for the depth-shaded view: interpolate each point's
+    // color between near (terracotta) and far (indigo) based on its z depth,
+    // instead of the photo's original RGB. Purely a display option, doesn't
+    // affect the exported .ply which always uses the photo's real colors.
+    const NEAR_RGB = [181, 83, 60];   // terracotta, --terracotta
+    const FAR_RGB  = [43, 58, 85];    // indigo, --indigo
+    const depthColorsF = new Float32Array(n*3);
+    const zRange = Math.max(1e-6, maxZ - minZ);
+    for(let i=0;i<n;i++){
+      const z = positions[i*3+2];
+      const t = (z - minZ) / zRange; // 0 = nearest, 1 = farthest
+      depthColorsF[i*3]   = (NEAR_RGB[0] + (FAR_RGB[0]-NEAR_RGB[0])*t) / 255;
+      depthColorsF[i*3+1] = (NEAR_RGB[1] + (FAR_RGB[1]-NEAR_RGB[1])*t) / 255;
+      depthColorsF[i*3+2] = (NEAR_RGB[2] + (FAR_RGB[2]-NEAR_RGB[2])*t) / 255;
+    }
+
+    return {positions, colorsF, depthColorsF, colorsByte: colors, count:n, center, depthRange:[minZ,maxZ]};
   }
 
   function renderPointCloud(result){
@@ -993,11 +1396,16 @@
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(result.positions, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(result.colorsF, 3));
-    const mat = new THREE.PointsMaterial({size:0.028, vertexColors:true, sizeAttenuation:true});
+    geo.setAttribute('color', new THREE.BufferAttribute(result.colorsF.slice(), 3));
+    const mat = new THREE.PointsMaterial({
+      size: pointSizeSlider ? parseFloat(pointSizeSlider.value) : 0.028,
+      vertexColors:true, sizeAttenuation:true
+    });
     pointsObj = new THREE.Points(geo, mat);
     pointsObj.userData.center = result.center;
     pointsObj.userData.homeDist = Math.max(2.5, (result.depthRange[1]-result.depthRange[0]) + 3);
+    pointsObj.userData.rgbColors = result.colorsF;
+    pointsObj.userData.depthColors = result.depthColorsF;
     scene.add(pointsObj);
 
     rotY = 0.5; rotX = -0.25; dist = pointsObj.userData.homeDist;
@@ -1006,6 +1414,13 @@
     sceneWrap.classList.add('ready');
     controlsRow.style.display = 'flex';
     pointCountEl.textContent = result.count.toLocaleString() + ' points';
+
+    // Reset the view controls to their defaults for each new upload.
+    if(viewControls) viewControls.style.display = 'flex';
+    if(colorRgbBtn && colorDepthBtn){
+      colorRgbBtn.classList.add('active'); colorRgbBtn.setAttribute('aria-pressed','true');
+      colorDepthBtn.classList.remove('active'); colorDepthBtn.setAttribute('aria-pressed','false');
+    }
   }
 
   function buildPlyText(result){
@@ -1136,6 +1551,100 @@
     const dt = e.dataTransfer;
     if(dt && dt.files && dt.files[0]) handleFile(dt.files[0]);
   });
+
+  // Point-cloud view controls: point size and RGB-vs-depth-shaded color.
+  if(pointSizeSlider){
+    pointSizeSlider.addEventListener('input', function(){
+      if(pointsObj) pointsObj.material.size = parseFloat(this.value);
+    });
+  }
+  function setColorMode(mode){
+    if(!pointsObj) return;
+    const src = mode === 'depth' ? pointsObj.userData.depthColors : pointsObj.userData.rgbColors;
+    if(!src) return;
+    pointsObj.geometry.attributes.color.array.set(src);
+    pointsObj.geometry.attributes.color.needsUpdate = true;
+    colorRgbBtn.classList.toggle('active', mode !== 'depth');
+    colorRgbBtn.setAttribute('aria-pressed', mode !== 'depth' ? 'true' : 'false');
+    colorDepthBtn.classList.toggle('active', mode === 'depth');
+    colorDepthBtn.setAttribute('aria-pressed', mode === 'depth' ? 'true' : 'false');
+  }
+  if(colorRgbBtn && colorDepthBtn){
+    colorRgbBtn.addEventListener('click', ()=> setColorMode('rgb'));
+    colorDepthBtn.addEventListener('click', ()=> setColorMode('depth'));
+  }
+})();
+</script>
+
+<script>
+/* Stupa anatomy diagram: clicking a shape or a glossary term highlights both. */
+(function(){
+  const allTargets = document.querySelectorAll('#stupa-anatomy [data-part]');
+  if(!allTargets.length) return;
+
+  function setActive(part){
+    allTargets.forEach(el=>{
+      const isMatch = el.dataset.part === part;
+      el.classList.toggle('active', isMatch);
+      el.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
+    });
+  }
+
+  allTargets.forEach(el=>{
+    el.addEventListener('click', ()=> setActive(el.dataset.part));
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        setActive(el.dataset.part);
+      }
+    });
+  });
+
+  // Lead with the dome active by default, since it's the part most visitors
+  // already recognize and gives an immediate sense of how the toggle works.
+  setActive('dome');
+})();
+</script>
+
+<script>
+/* Mobile nav toggle + scroll-based active-link highlighting. */
+(function(){
+  const yearEl = document.getElementById('foot-year-line');
+  if(yearEl){
+    yearEl.textContent = '\u00A9 ' + new Date().getFullYear() + ' Project Takshashila';
+  }
+
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  if(toggle && links){
+    toggle.addEventListener('click', function(){
+      const open = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    // Close the mobile menu after a link is tapped.
+    links.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('click', ()=>{
+        links.classList.remove('open');
+        toggle.setAttribute('aria-expanded','false');
+      });
+    });
+  }
+
+  const navAnchors = document.querySelectorAll('nav.top a[data-nav]');  const sections = Array.from(navAnchors).map(a=>document.getElementById(a.dataset.nav)).filter(Boolean);
+  if('IntersectionObserver' in window && sections.length){
+    const byId = {};
+    navAnchors.forEach(a=>{ byId[a.dataset.nav] = a; });
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          navAnchors.forEach(a=>a.classList.remove('active-link'));
+          const link = byId[entry.target.id];
+          if(link) link.classList.add('active-link');
+        }
+      });
+    }, {rootMargin:'-45% 0px -50% 0px'}); // fires when a section crosses the middle of the viewport
+    sections.forEach(s=>io.observe(s));
+  }
 })();
 </script>
 
