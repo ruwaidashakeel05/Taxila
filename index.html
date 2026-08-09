@@ -272,6 +272,94 @@
   </div>
 </section>
 
+<section id="then-now" style="max-width:900px;margin:4rem auto;padding:0 1.5rem;">
+  <h2 style="margin-bottom:0.5rem;">Mohra Moradu: Site Today vs. Historic Photography</h2>
+  <p style="opacity:0.8;margin-bottom:1.5rem;max-width:60ch;">
+    Drag the slider to compare two reference views of Mohra Moradu. <em>Note: these
+    are general site photographs, not a verified before/after pair of the specific
+    July 2026 cement conservation work UNESCO flagged — reporters at Dawn reviewed
+    photos of that specific work, but they aren't published under an open license we
+    could verify and reuse here.</em>
+    Photos: Wikimedia Commons, Category:Mohra Muradu, Taxila.
+  </p>
+
+  <div class="compare-slider" id="compareSlider"
+       style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;
+              border-radius:12px;user-select:none;cursor:ew-resize;">
+
+    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Buddhist_monastery_Mohra_Moradu.jpg"
+         alt="Mohra Moradu monastery view"
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+                display:block;">
+
+    <div class="compare-before-wrap" id="compareBeforeWrap"
+         style="position:absolute;inset:0;width:50%;overflow:hidden;">
+      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/A_photo_in_Mohra_Muradu.jpg"
+           alt="Mohra Moradu site view"
+           style="position:absolute;inset:0;width:200%;max-width:none;height:100%;
+                  object-fit:cover;display:block;left:0;">
+    </div>
+
+    <div class="compare-handle" id="compareHandle"
+         style="position:absolute;top:0;bottom:0;left:50%;width:3px;
+                background:#fff;transform:translateX(-50%);
+                box-shadow:0 0 6px rgba(0,0,0,0.5);pointer-events:none;">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                  width:36px;height:36px;border-radius:50%;background:#fff;
+                  box-shadow:0 2px 8px rgba(0,0,0,0.4);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:14px;">⇔</div>
+    </div>
+
+    <span style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.6);
+                 color:#fff;padding:4px 10px;border-radius:6px;font-size:0.8rem;">
+      View A
+    </span>
+    <span style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.6);
+                 color:#fff;padding:4px 10px;border-radius:6px;font-size:0.8rem;">
+      View B
+    </span>
+  </div>
+</section>
+
+<script>
+(function(){
+  const slider = document.getElementById('compareSlider');
+  const beforeWrap = document.getElementById('compareBeforeWrap');
+  const handle = document.getElementById('compareHandle');
+  if (!slider) return;
+
+  let dragging = false;
+
+  function setPosition(clientX) {
+    const rect = slider.getBoundingClientRect();
+    let pct = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    beforeWrap.style.width = pct + '%';
+    handle.style.left = pct + '%';
+  }
+
+  slider.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    setPosition(e.clientX);
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (dragging) setPosition(e.clientX);
+  });
+  window.addEventListener('pointerup', () => { dragging = false; });
+
+  slider.setAttribute('tabindex', '0');
+  slider.setAttribute('role', 'slider');
+  slider.setAttribute('aria-label', 'Before and after comparison slider');
+  slider.addEventListener('keydown', (e) => {
+    const rect = slider.getBoundingClientRect();
+    const current = parseFloat(beforeWrap.style.width) || 50;
+    if (e.key === 'ArrowLeft') setPosition(rect.left + rect.width * (current - 5) / 100);
+    if (e.key === 'ArrowRight') setPosition(rect.left + rect.width * (current + 5) / 100);
+  });
+})();
+</script>
+
 <section class="wide" id="reconstruction">
   <div class="inner">
     <p class="eyebrow">Extra credit · Interactive 3D</p>
@@ -329,8 +417,7 @@
       <span class="scene-hint" id="upload-point-count"></span>
     </div>
     <p class="scene-caption">The downloaded .ply is a standard ASCII point cloud (x y z + RGB per vertex),
-      openable in MeshLab, CloudCompare, or Blender — the same format used for
-      <code>output/jaulian_monastery_taxila.ply</code> in the source project.</p>
+      openable in MeshLab, CloudCompare, or Blender.</p>
   </div>
 </section>
 
@@ -753,13 +840,10 @@
 <script>
 /* ---------------------------------------------------------------------
    Upload-your-own-photo -> heuristic point cloud -> .ply download.
-
-   Same method as build_ply_reconstruction.py in the source project:
-   monocular heuristic depth (row position + edge strength, with a
+   Monocular heuristic depth (row position + edge strength, with a
    brightness-based sky/background mask), NOT real multi-view SfM.
-   Ported to run client-side on the pixels of whatever photo the
-   visitor picks. Nothing is uploaded anywhere; it all happens in
-   an in-page <canvas> and a Three.js scene.
+   Nothing is uploaded anywhere; it all happens in an in-page <canvas>
+   and a Three.js scene.
 ------------------------------------------------------------------------ */
 (function(){
   const fileInput = document.getElementById('photo-input');
@@ -772,10 +856,10 @@
   const emptyNote = document.getElementById('upload-scene-empty-note');
   const resetBtn = document.getElementById('upload-btn-reset');
 
-  const MAX_DIM = 260;   // downscale target for the working image, keeps point counts sane
-  const STEP = 2;        // sample every Nth pixel, mirrors the Python script's step=2
-  const SKY_BRIGHTNESS_THRESHOLD = 205; // 0-255, same cut used in build_ply_reconstruction.py
-  const MAX_FILE_SIZE_MB = 15; // reject oversized photos before they hang decode/canvas work on mobile
+  const MAX_DIM = 260;
+  const STEP = 2;
+  const SKY_BRIGHTNESS_THRESHOLD = 205;
+  const MAX_FILE_SIZE_MB = 15;
 
   let renderer, scene, camera, pointsObj;
   let dragging=false, prevX=0, prevY=0;
@@ -783,8 +867,6 @@
   let idleTimer=0, lastFrame=performance.now();
 
   function resizeRenderer(){
-    // sceneWrap must already be visible (class "ready") when this runs,
-    // otherwise clientWidth reads 0 because of display:none.
     const w = sceneWrap.clientWidth || 300;
     const h = canvas.clientHeight || 420;
     renderer.setSize(w, h, false);
@@ -862,7 +944,6 @@
   }
 
   function processImage(img){
-    // Downscale onto a working canvas so point counts stay reasonable.
     const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
     const w = Math.max(2, Math.round(img.width * scale));
     const h = Math.max(2, Math.round(img.height * scale));
@@ -871,9 +952,8 @@
     work.width = w; work.height = h;
     const ctx = work.getContext('2d');
     ctx.drawImage(img, 0, 0, w, h);
-    const imgData = ctx.getImageData(0, 0, w, h).data; // RGBA
+    const imgData = ctx.getImageData(0, 0, w, h).data;
 
-    // Grayscale + brightness (HSV V-channel == max(r,g,b))
     const gray = new Float32Array(w*h);
     const brightness = new Float32Array(w*h);
     for(let i=0;i<w*h;i++){
@@ -882,7 +962,6 @@
       brightness[i] = Math.max(r,g,b);
     }
 
-    // Sobel gradient magnitude (same 3x3 kernel as cv2.Sobel ksize=3)
     const gradMag = new Float32Array(w*h);
     let maxGrad = 1e-6;
     const at = (x,y)=> gray[Math.min(h-1,Math.max(0,y))*w + Math.min(w-1,Math.max(0,x))];
@@ -896,13 +975,11 @@
       }
     }
 
-    // Depth heuristic: 5.0 - 2.0*row_norm - 0.6*edge_strength, clipped [2,5],
-    // sky/background masked out by brightness threshold.
     const xs=[], ys=[], depths=[], colors=[];
     for(let y=0;y<h;y+=STEP){
       for(let x=0;x<w;x+=STEP){
         const idx = y*w+x;
-        if(brightness[idx] > SKY_BRIGHTNESS_THRESHOLD) continue; // sky/haze mask
+        if(brightness[idx] > SKY_BRIGHTNESS_THRESHOLD) continue;
         const rowNorm = y/(h-1);
         const edgeStrength = gradMag[idx]/maxGrad;
         let depth = 5.0 - 2.0*rowNorm - 0.6*edgeStrength;
@@ -912,7 +989,7 @@
       }
     }
 
-    const focal = w * 1.5; // scale focal length to image width
+    const focal = w * 1.5;
     const cx = w/2, cy = h/2;
     const positions = new Float32Array(xs.length*3);
     const colorsF = new Float32Array(xs.length*3);
@@ -1014,7 +1091,7 @@
     reader.onload = function(e){
       const img = new Image();
       img.onload = function(){
-        sceneWrap.classList.add('ready'); // must happen before any width measurement below
+        sceneWrap.classList.add('ready');
         if(!renderer){
           const ok = initThree();
           if(ok === false){
