@@ -1017,6 +1017,12 @@
   }
 
   function renderPointCloud(result){
+    if(!scene || !renderer || !camera){
+      const ok = initThree();
+      if(ok === false || !scene || !camera || !renderer){
+        throw new Error('WebGL viewer initialization failed.');
+      }
+    }
     if(pointsObj){
       scene.remove(pointsObj);
       pointsObj.geometry.dispose();
@@ -1064,6 +1070,49 @@
     return lines.join('\n') + '\n';
   }
 
+  function displayImageResult(result, downloadBase){
+    if(result.count < 50){
+      emptyNote.textContent = 'Almost the whole frame read as sky/background at the current brightness threshold, so there were too few points to build a cloud. Try a photo with more foreground detail.';
+      emptyNote.style.display = 'block';
+      sceneWrap.classList.remove('ready');
+      controlsRow.style.display = 'none';
+      downloadBtn.classList.add('disabled');
+      return false;
+    }
+
+    renderPointCloud(result);
+    const plyText = buildPlyText(result);
+    const blob = new Blob([plyText], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    downloadBtn.href = url;
+    downloadBtn.setAttribute('download', downloadBase + '_pointcloud.ply');
+    downloadBtn.classList.remove('disabled');
+    return true;
+  }
+
+  function handleLoadedImage(img, titleText, downloadBase){
+    filenameEl.textContent = titleText;
+    emptyNote.style.display = 'none';
+    sceneWrap.classList.add('ready');
+
+    if(!renderer){
+      const ok = initThree();
+      if(ok === false || !scene || !camera || !renderer){
+        emptyNote.textContent = 'Your browser or device doesn\'t support the 3D viewer (WebGL unavailable), so the point cloud can\'t be displayed here. Try a different browser or device.';
+        emptyNote.style.display = 'block';
+        sceneWrap.classList.remove('ready');
+        controlsRow.style.display = 'none';
+        downloadBtn.classList.add('disabled');
+        return;
+      }
+    } else {
+      resizeRenderer();
+    }
+
+    const result = processImage(img);
+    if(!displayImageResult(result, downloadBase)) return;
+  }
+
   function handleFile(file){
     if(!file) return;
     if(!file.type.startsWith('image/')){
@@ -1092,37 +1141,7 @@
     reader.onload = function(e){
       const img = new Image();
       img.onload = function(){
-        sceneWrap.classList.add('ready');
-        if(!renderer){
-          const ok = initThree();
-          if(ok === false){
-            emptyNote.textContent = 'Your browser or device doesn\'t support the 3D viewer (WebGL unavailable), so the point cloud can\'t be displayed here. Try a different browser or device.';
-            emptyNote.style.display = 'block';
-            sceneWrap.classList.remove('ready');
-            controlsRow.style.display = 'none';
-            downloadBtn.classList.add('disabled');
-            return;
-          }
-        } else {
-          resizeRenderer();
-        }
-        const result = processImage(img);
-        if(result.count < 50){
-          emptyNote.textContent = 'Almost the whole frame read as sky/background at the current brightness threshold, so there were too few points to build a cloud. Try a photo with more foreground detail.';
-          emptyNote.style.display = 'block';
-          sceneWrap.classList.remove('ready');
-          controlsRow.style.display = 'none';
-          downloadBtn.classList.add('disabled');
-          return;
-        }
-        renderPointCloud(result);
-        const plyText = buildPlyText(result);
-        const blob = new Blob([plyText], {type:'text/plain'});
-        const url = URL.createObjectURL(blob);
-        downloadBtn.href = url;
-        const base = file.name.replace(/\.[^.]+$/, '') || 'reconstruction';
-        downloadBtn.setAttribute('download', base + '_pointcloud.ply');
-        downloadBtn.classList.remove('disabled');
+        handleLoadedImage(img, file.name, file.name.replace(/\.[^.]+$/, '') || 'reconstruction');
       };
       img.src = e.target.result;
     };
@@ -1136,42 +1155,19 @@
   // Curated photo button: load a preset image and run the same pipeline
   const curatedBtn = document.getElementById('curated-btn');
   if(curatedBtn){
-    const curatedLocal = 'output/ply_reload_verification.png'; // local fallback present in repo
-    const curatedWikimedia = 'https://lh3.googleusercontent.com/gps-cs-s/AHRPTWlFhv6YcZi6ucWPt-W53MOpFtJKsfBakyhfbnRza0ytylFTJeElzIIFwblBCPYEPmj7WknuTlcZ8Vq-GjUuyolAfcc3Tcpxt8WNT6hAInQHHtVJqDnsxLUlXydbWF339VIUIVab5g=s1360-w1360-h1020-rw'; // set to a verified Wikimedia direct-image URL if available
+    const curatedLocal = './jaulian.webp'; // local Jaulian image asset in repo
     curatedBtn.addEventListener('click', function(){
       emptyNote.style.display = 'none';
       filenameEl.textContent = 'Jaulian Monastery (curated)';
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       img.onload = function(){
-        try{
-          const result = processImage(img);
-          if(result.count < 50){
-            emptyNote.textContent = 'Curated photo produced too few points to build a cloud.';
-            emptyNote.style.display = 'block';
-            sceneWrap.classList.remove('ready');
-            controlsRow.style.display = 'none';
-            downloadBtn.classList.add('disabled');
-            return;
-          }
-          renderPointCloud(result);
-          const plyText = buildPlyText(result);
-          const blob = new Blob([plyText], {type:'text/plain'});
-          const url = URL.createObjectURL(blob);
-          downloadBtn.href = url;
-          downloadBtn.setAttribute('download', 'jaulian_curated_pointcloud.ply');
-          downloadBtn.classList.remove('disabled');
-          filenameEl.textContent = 'Jaulian Monastery (curated) — local fallback';
-        } catch(err){
-          emptyNote.textContent = 'Error processing curated image: ' + (err && err.message ? err.message : err);
-          emptyNote.style.display = 'block';
-        }
+        handleLoadedImage(img, 'Jaulian Monastery (curated) — local asset', 'jaulian_curated');
       };
       img.onerror = function(){
-        emptyNote.textContent = 'Curated image failed to load (CORS or broken link).';
+        emptyNote.textContent = 'Curated image failed to load from local asset.';
         emptyNote.style.display = 'block';
       };
-      img.src = curatedWikimedia || curatedLocal;
+      img.src = curatedLocal;
     });
   }
 })();
