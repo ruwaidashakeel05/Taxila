@@ -287,17 +287,17 @@
        style="position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;
               border-radius:12px;user-select:none;cursor:ew-resize;">
 
-    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Buddhist_monastery_Mohra_Moradu.jpg"
-         alt="Mohra Moradu monastery view"
+        <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Buddhist%20monastery%20Mohra%20Moradu.jpg"
+          alt="Mohra Moradu monastery view"
          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
                 display:block;">
 
-    <div class="compare-before-wrap" id="compareBeforeWrap"
-         style="position:absolute;inset:0;width:50%;overflow:hidden;">
-      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/A_photo_in_Mohra_Muradu.jpg"
-           alt="Mohra Moradu site view"
-           style="position:absolute;inset:0;width:200%;max-width:none;height:100%;
-                  object-fit:cover;display:block;left:0;">
+        <div class="compare-before-wrap" id="compareBeforeWrap"
+          style="position:absolute;inset:0;width:50%;overflow:hidden;">
+       <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0g5yv2yR6SxoTnCqoHFekJj36_Iz6lRpuKXuGE1Gcfw&s=10"
+         alt="Mohra Moradu site view"
+         style="position:absolute;inset:0;width:200%;max-width:none;height:100%;
+             object-fit:cover;display:block;left:0;">
     </div>
 
     <div class="compare-handle" id="compareHandle"
@@ -399,6 +399,7 @@
 
     <div class="upload-panel">
       <label class="upload-btn" for="photo-input">Choose a photo</label>
+      <button id="curated-btn" class="upload-btn" type="button" style="margin-left:.6rem;">Jaulian Monastery (curated)</button>
       <input type="file" id="photo-input" accept="image/*">
       <p class="upload-hint">Processed entirely in your browser. Nothing leaves your device.</p>
       <p class="upload-filename" id="upload-filename"></p>
@@ -1131,6 +1132,48 @@
   fileInput.addEventListener('change', function(){
     if(this.files && this.files[0]) handleFile(this.files[0]);
   });
+
+  // Curated photo button: load a preset image and run the same pipeline
+  const curatedBtn = document.getElementById('curated-btn');
+  if(curatedBtn){
+    const curatedLocal = 'output/ply_reload_verification.png'; // local fallback present in repo
+    const curatedWikimedia = ''; // set to a verified Wikimedia direct-image URL if available
+    curatedBtn.addEventListener('click', function(){
+      emptyNote.style.display = 'none';
+      filenameEl.textContent = 'Jaulian Monastery (curated)';
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function(){
+        try{
+          const result = processImage(img);
+          if(result.count < 50){
+            emptyNote.textContent = 'Curated photo produced too few points to build a cloud.';
+            emptyNote.style.display = 'block';
+            sceneWrap.classList.remove('ready');
+            controlsRow.style.display = 'none';
+            downloadBtn.classList.add('disabled');
+            return;
+          }
+          renderPointCloud(result);
+          const plyText = buildPlyText(result);
+          const blob = new Blob([plyText], {type:'text/plain'});
+          const url = URL.createObjectURL(blob);
+          downloadBtn.href = url;
+          downloadBtn.setAttribute('download', 'jaulian_curated_pointcloud.ply');
+          downloadBtn.classList.remove('disabled');
+          filenameEl.textContent = 'Jaulian Monastery (curated) — local fallback';
+        } catch(err){
+          emptyNote.textContent = 'Error processing curated image: ' + (err && err.message ? err.message : err);
+          emptyNote.style.display = 'block';
+        }
+      };
+      img.onerror = function(){
+        emptyNote.textContent = 'Curated image failed to load (CORS or broken link).';
+        emptyNote.style.display = 'block';
+      };
+      img.src = curatedWikimedia || curatedLocal;
+    });
+  }
 })();
 </script>
 
